@@ -31,3 +31,9 @@ updates:
     ignore:
       # Matches nixpkgs' playwright-driver browsers (flake.nix); bump both together.
       - dependency-name: "@playwright/test"
+      # @astrojs/check doesn't accept TypeScript 7 yet; revisit when it does.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # Tracks the Node major in .node-version; bump both together.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
