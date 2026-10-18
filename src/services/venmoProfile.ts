@@ -147,7 +147,7 @@ const defaultLookup: typeof lookupVenmo = async (username, f) => {
 };
 
 /** Why a username can't be saved, from what its check found. */
-export const venmoProblem = (username: string, status: VenmoStatus | null) =>
+const venmoProblem = (username: string, status: VenmoStatus | null) =>
   status === "not_found"
     ? `We couldn't find @${username} on Venmo; check the spelling.`
     : "Couldn't check Venmo right now; try again in a minute.";

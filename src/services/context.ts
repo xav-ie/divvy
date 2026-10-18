@@ -18,7 +18,7 @@ export function requireGroup(ctx: Ctx, groupId: number): Group {
 }
 
 /** How long a deleted expense or payment can be restored. */
-export const RESTORE_DAYS = 7;
+const RESTORE_DAYS = 7;
 
 /** Throws unless `deletedAt` is set and within the restore window. */
 export function requireRestorable(

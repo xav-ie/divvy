@@ -41,7 +41,7 @@ export function debtSentence(
 }
 
 /** "You and Cy are settled up". */
-export function settledSentence(
+function settledSentence(
   names: Names,
   viewer: MemberId,
   a: MemberId,

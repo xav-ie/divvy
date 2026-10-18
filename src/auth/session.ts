@@ -7,10 +7,10 @@ import { devEmail } from "./dev.ts";
 import { pickedUserId } from "./picker.ts";
 
 /** Cookie Cloudflare Access sets on the app's domain; a fallback when the header is missing. */
-export const ACCESS_COOKIE = "CF_Authorization";
+const ACCESS_COOKIE = "CF_Authorization";
 
 /** The signed-in user (created on first sign-in) and the email this request proved. */
-export interface Identity {
+interface Identity {
   user: User;
   email: string;
 }

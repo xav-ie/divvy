@@ -7,8 +7,6 @@ import { notFound } from "./errors.ts";
 import { parse } from "./parse.ts";
 import { id, TokenInput } from "./schemas.ts";
 
-export type { ApiToken } from "../db/tokens.ts";
-
 /** `divvy_<8 hex prefix>_<43 char secret>`. */
 const TOKEN = /^divvy_([0-9a-f]{8})_[\w-]{43}$/;
 

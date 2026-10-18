@@ -220,7 +220,7 @@ export function setItemize(s: EditorState, on: boolean): EditorState {
 }
 
 /** Cents for a typed amount; NaN when it isn't one (domain validation then reports it). */
-export const cents = (text: string): number => parseCents(text) ?? NaN;
+const cents = (text: string): number => parseCents(text) ?? NaN;
 
 function quantity(text: string): number {
   const n = Number(text.trim());
@@ -228,7 +228,7 @@ function quantity(text: string): number {
 }
 
 /** The item as the domain sees it: price and quantity from the item (or the single amount). */
-export function toItem(s: EditorState, item: ItemState): ExpenseItem {
+function toItem(s: EditorState, item: ItemState): ExpenseItem {
   const split: SplitMap = {};
   for (const id of item.who) {
     const raw = item.values[id] ?? "";
@@ -259,7 +259,7 @@ export function toItem(s: EditorState, item: ItemState): ExpenseItem {
 }
 
 /** Tax, tip or discount in cents; percentages apply to the subtotal. */
-export function extraCents(extra: Extra, subtotal: number): number {
+function extraCents(extra: Extra, subtotal: number): number {
   if (!extra.value.trim()) return 0;
   if (extra.unit === "$") return cents(extra.value);
   const pct = Number(extra.value.replace("%", "").trim());

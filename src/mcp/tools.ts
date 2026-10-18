@@ -11,7 +11,7 @@ import { getGroup, listGroups, type GroupMember } from "../services/groups.ts";
 export type Register = (server: McpServer, ctx: Ctx) => void;
 
 /** Structured result plus the same JSON as text for clients that ignore structuredContent. */
-export function ok(data: Record<string, unknown>): CallToolResult {
+function ok(data: Record<string, unknown>): CallToolResult {
   return {
     content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
     structuredContent: data,

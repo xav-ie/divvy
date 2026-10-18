@@ -4,7 +4,7 @@ import type { Cents, LocalDate } from "../domain/types.ts";
 import { localDate } from "../services/schemas.ts";
 import { RECEIPT_PROMPT, RECEIPT_SCHEMA } from "./prompt.ts";
 
-export interface ScannedItem {
+interface ScannedItem {
   name: string;
   quantity: number;
   unitCents: Cents;
@@ -71,7 +71,7 @@ export async function scanReceipt(
 }
 
 /** The model's JSON: an object already, or text holding one. */
-export function structuredOutput(response: unknown): unknown {
+function structuredOutput(response: unknown): unknown {
   if (response && typeof response === "object") return response;
   const text = typeof response === "string" ? response : "";
   const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
@@ -89,7 +89,7 @@ const cents = (dollars: unknown): Cents =>
 const str = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
 /** Validate the model's dollars and convert them to cents. */
-export function toReceipt(raw: unknown): ScannedReceipt {
+function toReceipt(raw: unknown): ScannedReceipt {
   if (
     !raw ||
     typeof raw !== "object" ||

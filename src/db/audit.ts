@@ -1,7 +1,7 @@
 import type { Db } from "./connection.ts";
 import { all, placeholders, run } from "./rows.ts";
 
-export type AuditAction = "create" | "update" | "delete" | "restore";
+type AuditAction = "create" | "update" | "delete" | "restore";
 
 export interface AuditEntry {
   id: number;

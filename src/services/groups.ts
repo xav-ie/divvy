@@ -6,8 +6,6 @@ import { forbidden } from "./errors.ts";
 import { parse } from "./parse.ts";
 import { GroupInput, GroupPatch, id } from "./schemas.ts";
 
-export type { Group } from "../db/groups.ts";
-
 export interface GroupMember extends Member {
   /** This member is the acting user. */
   isYou: boolean;

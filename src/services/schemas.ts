@@ -87,7 +87,7 @@ export const MemberPatch = z
   .object({ name: name.optional(), email: email.optional() })
   .refine((m) => m.name || m.email, "Give a name or an email");
 
-export const ItemInput = z.object({
+const ItemInput = z.object({
   name: text(200).default(""),
   quantity: z.number().positive("Quantity must be above 0").default(1),
   unitCents: cents,

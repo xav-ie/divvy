@@ -9,8 +9,6 @@ import { forbidden, invalid, notFound } from "./errors.ts";
 import { parse } from "./parse.ts";
 import { id, PaymentInput } from "./schemas.ts";
 
-export type { Payment } from "../db/payments.ts";
-
 export interface PaymentView extends repo.Payment {
   fromName: string;
   toName: string;

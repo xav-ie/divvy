@@ -143,7 +143,7 @@ export interface DrillLine {
 }
 
 /** Oldest first by date, then creation time, then id. */
-export function compareEntries(a: LedgerEntry, b: LedgerEntry): number {
+function compareEntries(a: LedgerEntry, b: LedgerEntry): number {
   return (
     a.date.localeCompare(b.date) ||
     a.created.localeCompare(b.created) ||

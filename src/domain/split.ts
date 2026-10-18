@@ -110,7 +110,7 @@ function itemCarry(
  * the payer who paid most (lowest id on ties) if they share it, else nobody
  * in particular (the seeded spread decides).
  */
-export function oddCentsTo(
+function oddCentsTo(
   sharing: ReadonlyMap<MemberId, number>,
   creator: MemberId | undefined,
   payers: Amounts | undefined,

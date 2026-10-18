@@ -9,7 +9,7 @@ import type {
 import type { Db } from "./connection.ts";
 import { all, insertedId, one, placeholders, run } from "./rows.ts";
 
-export interface ExpenseRecord extends Adjustments {
+interface ExpenseRecord extends Adjustments {
   id: number;
   groupId: number;
   title: string;
