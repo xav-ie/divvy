@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- A cheeky coin raccoon with a mask, here to divvy up the loot. -->
+  <defs><radialGradient id="bg" cx="28%" cy="18%" r="95%"><stop offset="0" stop-color="#14a37f"/><stop offset="1" stop-color="#095f4c"/></radialGradient></defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g fill="#0a4a3c" stroke="#0a4a3c" stroke-width="20" stroke-linejoin="round"><path d="M146 206 L150 108 L230 160 Z"/><path d="M366 206 L362 108 L282 160 Z"/></g>
+  <g fill="#fff4dc"><path d="M168 182 L170 138 L208 162 Z"/><path d="M344 182 L342 138 L304 162 Z"/></g>
+  <circle cx="256" cy="290" r="150" fill="#fff4dc"/>
+  <circle cx="256" cy="290" r="130" fill="none" stroke="#efdcb0" stroke-width="10"/>
+  <path d="M118 272 Q160 222 222 238 Q256 252 290 238 Q352 222 394 272 Q352 314 300 298 Q256 284 212 298 Q160 314 118 272 Z" fill="#0a4a3c"/>
+  <g fill="#fff"><circle cx="196" cy="266" r="20"/><circle cx="316" cy="266" r="20"/></g>
+  <g fill="#0a4a3c"><circle cx="200" cy="268" r="10"/><circle cx="312" cy="268" r="10"/></g>
+  <path d="M242 318 L270 318 L256 334 Z" fill="#0a4a3c" stroke="#0a4a3c" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M232 352 Q256 368 280 352" fill="none" stroke="#0a4a3c" stroke-width="10" stroke-linecap="round"/>
+  <g fill="#f5b942" stroke="#c98a1c" stroke-width="6"><circle cx="372" cy="388" r="34"/></g>
+  <circle cx="372" cy="388" r="18" fill="none" stroke="#c98a1c" stroke-width="6"/>
+</svg>

@@ -1,0 +1,80 @@
+name: Release
+
+# On every push to main, changesets/action does one of two things:
+#
+#   change files in .changeset/ -> open or update the rolling
+#   "chore: version packages" PR (bumps package.json, writes CHANGELOG.md,
+#   consumes the change files). Nothing is released.
+#
+#   none left (that PR was just merged) -> `npm run release` tags
+#   v<version>, the action pushes the tag and creates the GitHub release
+#   with the changelog, and the Worker is deployed.
+#
+# Deploying runs in the "production" environment, which only main can use:
+# the repository variable CLOUDFLARE_ACCOUNT_ID, and the environment secrets
+# CLOUDFLARE_API_TOKEN (Edit Cloudflare Workers template) and DIVVY_DOMAIN
+# (the custom domain; a secret so logs mask it). Without the account variable
+# the release is tagged but not deployed, as in copies made with the Deploy
+# to Cloudflare button, which deploy through Workers Builds instead.
+on:
+  push:
+    branches: [main]
+
+# The version PR's state lives in the repository; never run two at once.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # push the version branch, tags and releases
+      pull-requests: write # open or update the version PR
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1  # zizmor: ignore[artipacked] changesets pushes the version branch and tags with it
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - name: Version PR or release
+        id: changesets
+        uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        with:
+          github-token: ${{ github.token }}
+          version-script: npm run version
+          publish-script: npm run release
+          commit-message: "chore: version packages"
+          pr-title: "chore: version packages"
+    outputs:
+      published: ${{ steps.changesets.outputs.published }}
+
+  deploy:
+    needs: release
+    if: needs.release.outputs.published == 'true' && vars.CLOUDFLARE_ACCOUNT_ID != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - name: Deploy the Worker
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          DIVVY_DOMAIN: ${{ secrets.DIVVY_DOMAIN }}
+        run: npm run build && npm run deploy -- ${DIVVY_DOMAIN:+--domain "$DIVVY_DOMAIN"}

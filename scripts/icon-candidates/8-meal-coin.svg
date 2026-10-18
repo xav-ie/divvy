@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Fork and knife crossing over a coin, for shared meals (outline style). -->
+  <rect width="512" height="512" fill="#08503f"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#5cd6a8" stroke-width="28"/>
+  <g fill="none" stroke="#fff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M168 132 V196 Q168 222 194 222 Q220 222 220 196 V132 M194 132 V398"/>
+    <path d="M330 398 V132 Q370 160 370 230 Q370 262 330 262"/>
+  </g>
+</svg>

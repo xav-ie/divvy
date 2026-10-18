@@ -1,0 +1,43 @@
+---
+import { formatTime } from "../client/format.ts";
+import type { ActivityItem } from "../services/activity.ts";
+import Avatar from "./Avatar.tsx";
+import RichText from "./RichText.astro";
+import type { PersonRef } from "../client/colorize.ts";
+
+interface Props {
+  items: ActivityItem[];
+  /** Group id -> name, to label items when they span groups. */
+  groups?: Map<number, string>;
+  /** Names that may appear in the sentences, to color in each person's hue. */
+  people?: PersonRef[];
+  /** The viewer's member id, so "you" is colored too. */
+  viewerId?: number;
+}
+const { items, groups, people = [], viewerId } = Astro.props;
+---
+
+{items.length === 0 ? (
+  <p class="card p-4 text-muted">Nothing has happened yet.</p>
+) : (
+  <ul class="card divide-y divide-line" aria-label="Activity">
+    {items.map((a) => (
+      <li class="flex gap-3 px-4 py-3">
+        <Avatar name={a.userName} id={a.actorMemberId ?? undefined} />
+        <div class="min-w-0 flex-1">
+          <p>
+            <RichText
+              text={a.sentence}
+              people={people}
+              viewer={viewerId !== undefined ? { id: viewerId } : undefined}
+            />
+          </p>
+          <p class="text-sm text-muted">
+            {formatTime(a.created)}
+            {groups?.get(a.groupId) && <> · {groups.get(a.groupId)}</>}
+          </p>
+        </div>
+      </li>
+    ))}
+  </ul>
+)}

@@ -1,0 +1,50 @@
+---
+import LinkEmail from "../../components/LinkEmail.tsx";
+import Skeleton from "../../components/Skeleton.astro";
+import Layout from "../../layouts/Layout.astro";
+import { peekLink } from "../../services/emails.ts";
+import { ServiceError } from "../../services/errors.ts";
+
+const { ctx, auth, email } = Astro.locals;
+const code = Astro.params.code ?? "";
+let problem = "";
+let ownerName = "";
+if (auth.mode !== "access") {
+  problem =
+    "Adding sign-in emails is available with Cloudflare sign-in, which verifies each email.";
+} else {
+  try {
+    ownerName = peekLink(ctx.db, code).ownerName;
+  } catch (err) {
+    if (!(err instanceof ServiceError)) throw err;
+    problem = err.message;
+  }
+}
+---
+
+<Layout
+  title="Link an email"
+  crumbs={[{ href: "/profile", label: "Profile" }]}
+  form
+>
+  {problem ? (
+    <p class="card p-4" role="alert" data-testid="link-problem">
+      {problem}
+    </p>
+  ) : (
+    <div class="card space-y-3 p-4">
+      <p>
+        You're signed in as <strong>{email}</strong>. Link it to{" "}
+        <strong>{ownerName}</strong>'s divvy account, so signing in with it
+        opens that account?
+      </p>
+      <p class="text-sm text-muted">
+        If {email} already has an empty divvy account from signing in once, it
+        is merged away. An account with groups or bills can't be linked.
+      </p>
+      <LinkEmail client:only="react" code={code} email={email}>
+        <Skeleton slot="fallback" rows={1} />
+      </LinkEmail>
+    </div>
+  )}
+</Layout>

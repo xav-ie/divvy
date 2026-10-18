@@ -1,0 +1,47 @@
+---
+import RecurringForm from "../../../../components/RecurringForm.tsx";
+import Skeleton from "../../../../components/Skeleton.astro";
+import Layout from "../../../../layouts/Layout.astro";
+import { ServiceError } from "../../../../services/errors.ts";
+import { getGroup } from "../../../../services/groups.ts";
+
+const { ctx } = Astro.locals;
+const param = Astro.params.recurringId;
+const recurringId = param === "new" ? undefined : Number(param);
+let group;
+try {
+  if (recurringId !== undefined && !(recurringId > 0))
+    throw new ServiceError(404, "Not found");
+  group = getGroup(ctx, Number(Astro.params.groupId));
+} catch (err) {
+  if (err instanceof ServiceError) return Astro.rewrite("/404");
+  throw err;
+}
+---
+
+<Layout
+  title={recurringId ? "Edit recurring bill" : "New recurring bill"}
+  crumbs={[
+    { href: "/groups", label: "Groups" },
+    {
+      href: `/groups/${group.id}?recurring=1#recurring`,
+      label: `${group.emoji} ${group.name}`.trim(),
+    },
+  ]}
+  form
+>
+  <RecurringForm
+    client:only="react"
+    groupId={group.id}
+    me={ctx.user.memberId}
+    recurringId={recurringId}
+    members={group.members.map((m) => ({
+      id: m.id,
+      name: m.name,
+      isYou: m.isYou,
+      placeholder: m.placeholder,
+    }))}
+  >
+    <Skeleton slot="fallback" rows={4} />
+  </RecurringForm>
+</Layout>

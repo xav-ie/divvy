@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Side profile: the body is a thick coin with a ridged edge, snout to the right. -->
+  <defs><radialGradient id="bg" cx="28%" cy="18%" r="95%"><stop offset="0" stop-color="#14a37f"/><stop offset="1" stop-color="#095f4c"/></radialGradient></defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <path d="M112 300 q-26 -6 -18 -30 q8 -22 30 -8" fill="none" stroke="#ff8f7d" stroke-width="14" stroke-linecap="round"/>
+  <g fill="#fff4dc"><rect x="170" y="380" width="38" height="58" rx="14"/><rect x="292" y="380" width="38" height="58" rx="14"/></g>
+  <circle cx="272" cy="270" r="138" fill="#e8d3a2"/>
+  <clipPath id="band"><circle cx="272" cy="270" r="138"/></clipPath>
+  <g clip-path="url(#band)" stroke="#cbb27a" stroke-width="8"><line x1="390" y1="140" x2="410" y2="150"/><line x1="404" y1="190" x2="424" y2="196"/><line x1="410" y1="240" x2="430" y2="242"/><line x1="410" y1="290" x2="430" y2="290"/><line x1="404" y1="340" x2="424" y2="336"/><line x1="390" y1="388" x2="410" y2="380"/></g>
+  <circle cx="240" cy="270" r="138" fill="#fff4dc"/>
+  <circle cx="240" cy="270" r="116" fill="none" stroke="#efdcb0" stroke-width="10"/>
+  <path d="M286 154 L300 82 L346 150 Z" fill="#fff4dc" stroke="#fff4dc" stroke-width="20" stroke-linejoin="round"/>
+  <path d="M304 140 L306 110 L326 140 Z" fill="#ff8f7d"/>
+  <rect x="200" y="148" width="64" height="14" rx="7" fill="#0a4a3c"/>
+  <ellipse cx="302" cy="250" rx="17" ry="21" fill="#0a4a3c"/><circle cx="308" cy="243" r="6" fill="#fff"/>
+  <rect x="352" y="264" width="64" height="72" rx="28" fill="#ff8f7d"/>
+  <ellipse cx="400" cy="300" rx="8" ry="14" fill="#c4574a"/>
+</svg>

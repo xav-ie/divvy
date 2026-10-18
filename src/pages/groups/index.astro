@@ -1,0 +1,33 @@
+---
+import Chevron from "../../components/Chevron.astro";
+import GroupCreate from "../../components/GroupCreate.tsx";
+import Skeleton from "../../components/Skeleton.astro";
+import Layout from "../../layouts/Layout.astro";
+import { listGroups } from "../../services/groups.ts";
+
+const groups = listGroups(Astro.locals.ctx);
+---
+
+<Layout title="Groups">
+  <GroupCreate client:only="react" hasGroups={groups.length > 0}>
+    <Skeleton slot="fallback" rows={1} height="h-11 mb-3" />
+  </GroupCreate>
+  {groups.length > 0 && (
+    <ul
+      class="card divide-y divide-line overflow-hidden"
+      aria-label="Your groups"
+    >
+      {groups.map((g) => (
+        <li>
+          <a href={`/groups/${g.id}`} class="row-link">
+            <span class="w-8 text-center text-2xl" aria-hidden="true">
+              {g.emoji || "👥"}
+            </span>
+            <span class="flex-1 font-medium">{g.name}</span>
+            <Chevron />
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+</Layout>

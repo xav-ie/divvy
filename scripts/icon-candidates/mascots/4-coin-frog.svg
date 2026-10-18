@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- A coin frog with eye bumps, a big smile and rosy cheeks. -->
+  <defs><radialGradient id="bg" cx="28%" cy="18%" r="95%"><stop offset="0" stop-color="#14a37f"/><stop offset="1" stop-color="#095f4c"/></radialGradient></defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g fill="#fff4dc"><circle cx="178" cy="186" r="62"/><circle cx="334" cy="186" r="62"/></g>
+  <circle cx="256" cy="304" r="140" fill="#fff4dc"/>
+  <circle cx="256" cy="304" r="120" fill="none" stroke="#efdcb0" stroke-width="10"/>
+  <g fill="#fff"><circle cx="178" cy="186" r="38"/><circle cx="334" cy="186" r="38"/></g>
+  <g fill="#0a4a3c"><circle cx="184" cy="192" r="20"/><circle cx="328" cy="192" r="20"/></g>
+  <g fill="#fff"><circle cx="191" cy="183" r="7"/><circle cx="335" cy="183" r="7"/></g>
+  <g fill="#ff8f7d" opacity=".75"><circle cx="168" cy="320" r="24"/><circle cx="344" cy="320" r="24"/></g>
+  <path d="M184 318 Q256 382 328 318" fill="none" stroke="#0a4a3c" stroke-width="14" stroke-linecap="round"/>
+  <g fill="#0a4a3c"><circle cx="240" cy="282" r="6"/><circle cx="272" cy="282" r="6"/></g>
+</svg>

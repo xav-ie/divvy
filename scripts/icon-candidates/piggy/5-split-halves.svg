@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- The piggy split down the middle, two smiling halves slightly apart: the divvy idea. -->
+  <defs><radialGradient id="bg" cx="28%" cy="18%" r="95%"><stop offset="0" stop-color="#14a37f"/><stop offset="1" stop-color="#095f4c"/></radialGradient></defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g fill="#fff4dc" stroke="#fff4dc" stroke-width="22" stroke-linejoin="round"><path d="M126 196 L114 116 L190 150 Z"/><path d="M386 196 L398 116 L322 150 Z"/></g>
+  <g fill="#ff8f7d"><path d="M140 178 L136 140 L172 156 Z"/><path d="M372 178 L376 140 L340 156 Z"/></g>
+  <path d="M236 128 A156 156 0 0 0 236 440 Z" fill="#fff4dc"/>
+  <path d="M276 128 A156 156 0 0 1 276 440 Z" fill="#fff4dc"/>
+  <g fill="#0a4a3c"><rect x="200" y="152" width="30" height="14" rx="7"/><rect x="282" y="152" width="30" height="14" rx="7"/></g>
+  <g fill="#0a4a3c"><ellipse cx="170" cy="262" rx="16" ry="20"/><ellipse cx="342" cy="262" rx="16" ry="20"/></g>
+  <g fill="#fff"><circle cx="176" cy="255" r="6"/><circle cx="348" cy="255" r="6"/></g>
+  <path d="M236 290 A44 40 0 0 0 236 370 Z" fill="#ff8f7d"/>
+  <path d="M276 290 A44 40 0 0 1 276 370 Z" fill="#ff8f7d"/>
+  <g fill="#c4574a"><ellipse cx="216" cy="330" rx="7" ry="12"/><ellipse cx="296" cy="330" rx="7" ry="12"/></g>
+  <g fill="none" stroke="#0a4a3c" stroke-width="10" stroke-linecap="round"><path d="M150 330 Q164 348 182 334"/><path d="M362 330 Q348 348 330 334"/></g>
+</svg>

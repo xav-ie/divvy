@@ -1,0 +1,27 @@
+---
+import { colorize, type PersonRef } from "../client/colorize.ts";
+import { hueFor } from "../client/hue.ts";
+
+/** Text with every person's name inside colored in their hue. */
+interface Props {
+  text: string;
+  /** The cast whose names may appear, so they resolve to stable hues. */
+  people?: PersonRef[];
+  /** The viewer, so "you"/"your" get their own hue too. */
+  viewer?: { id?: number };
+}
+const { text, people = [], viewer } = Astro.props;
+---
+
+{colorize(text, people, viewer).map((c) =>
+  c.person ? (
+    <span
+      class="person"
+      style={`--hue:${hueFor(c.person!.id ?? c.person!.name)}`}
+    >
+      {c.text}
+    </span>
+  ) : (
+    c.text
+  ),
+)}

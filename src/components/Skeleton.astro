@@ -1,0 +1,13 @@
+---
+interface Props {
+  rows?: number;
+  height?: string;
+}
+const { rows = 3, height = "h-14" } = Astro.props;
+---
+
+<div aria-busy="true" aria-label="Loading" class="space-y-3">
+  {Array.from({ length: rows }, () => (
+    <div class:list={["skeleton", height]} />
+  ))}
+</div>

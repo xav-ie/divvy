@@ -1,0 +1,83 @@
+---
+import ExpenseEditor from "../../../components/ExpenseEditor.tsx";
+import Skeleton from "../../../components/Skeleton.astro";
+import Layout from "../../../layouts/Layout.astro";
+import { getMembers, memberForUser } from "../../../db/members.ts";
+import { ServiceError } from "../../../services/errors.ts";
+import { getExpense } from "../../../services/expenses.ts";
+import { getGroup } from "../../../services/groups.ts";
+
+const { ctx } = Astro.locals;
+let expense;
+let group;
+try {
+  expense = getExpense(ctx, Number(Astro.params.expenseId));
+  group = getGroup(ctx, expense.groupId);
+} catch (err) {
+  if (err instanceof ServiceError) return Astro.rewrite("/404");
+  throw err;
+}
+if (!expense.canEdit) return Astro.redirect(`/expenses/${expense.id}`);
+
+// People already on the expense stay editable even if they left the group.
+const current = new Set(group.members.map((m) => m.id));
+const onExpense = [
+  ...Object.keys(expense.payers),
+  ...expense.items.flatMap((i) => Object.keys(i.split)),
+].map(Number);
+const former = getMembers(
+  ctx.db,
+  [...new Set(onExpense)].filter((id) => !current.has(id)),
+);
+const members = [
+  ...group.members.map((m) => ({
+    id: m.id,
+    name: m.name,
+    isYou: m.isYou,
+    placeholder: m.placeholder,
+  })),
+  ...former.map((m) => ({ id: m.id, name: m.name, isYou: false })),
+];
+---
+
+<Layout
+  title={`Edit ${expense.title}`}
+  crumb="Edit"
+  crumbs={[
+    { href: "/groups", label: "Groups" },
+    {
+      href: `/groups/${group.id}`,
+      label: `${group.emoji} ${group.name}`.trim(),
+    },
+    { href: `/expenses/${expense.id}`, label: expense.title },
+  ]}
+  form
+>
+  <ExpenseEditor
+    client:only="react"
+    groupId={group.id}
+    me={ctx.user.memberId}
+    members={members}
+    expense={{
+      id: expense.id,
+      title: expense.title,
+      date: expense.date,
+      items: expense.items,
+      taxCents: expense.taxCents,
+      tipCents: expense.tipCents,
+      discountCents: expense.discountCents,
+      payers: expense.payers,
+      creatorMemberId: memberForUser(ctx.db, expense.createdBy)?.id ?? null,
+      notes: expense.notes,
+      category: expense.category,
+      taxMode: expense.taxMode,
+      taxValue: expense.taxValue,
+      tipMode: expense.tipMode,
+      tipValue: expense.tipValue,
+      discountMode: expense.discountMode,
+      discountValue: expense.discountValue,
+    }}
+  >
+    <Skeleton slot="fallback" rows={5} />
+  </ExpenseEditor>
+</Layout>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- A house with a coin inside: what the household shares (bold single glyph). -->
+  <rect width="512" height="512" fill="#0b7560"/>
+  <path d="M256 92 L432 236 Q440 244 432 252 L414 268 V408 Q414 424 398 424 H114 Q98 424 98 408 V268 L80 252 Q72 244 80 236 Z" fill="#fff"/>
+  <circle cx="256" cy="320" r="72" fill="#f5b942"/>
+  <circle cx="256" cy="320" r="48" fill="none" stroke="#c98a1c" stroke-width="12"/>
+</svg>

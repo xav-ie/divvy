@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- A coin split into two little halves high-fiving. -->
+  <defs><radialGradient id="bg" cx="28%" cy="18%" r="95%"><stop offset="0" stop-color="#14a37f"/><stop offset="1" stop-color="#095f4c"/></radialGradient></defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g fill="none" stroke="#fff4dc" stroke-width="26" stroke-linecap="round"><path d="M220 214 L248 140"/><path d="M292 214 L264 140"/></g>
+  <g fill="#fff4dc"><circle cx="246" cy="132" r="22"/><circle cx="266" cy="132" r="22"/></g>
+  <g stroke="#f5b942" stroke-width="10" stroke-linecap="round"><line x1="256" y1="68" x2="256" y2="92"/><line x1="220" y1="80" x2="232" y2="100"/><line x1="292" y1="80" x2="280" y2="100"/></g>
+  <path d="M234 196 A124 124 0 0 0 234 444 Z" fill="#fff4dc"/>
+  <path d="M278 196 A124 124 0 0 1 278 444 Z" fill="#fff4dc"/>
+  <g fill="#0a4a3c"><circle cx="160" cy="306" r="13"/><circle cx="204" cy="306" r="13"/><circle cx="308" cy="306" r="13"/><circle cx="352" cy="306" r="13"/></g>
+  <g fill="none" stroke="#0a4a3c" stroke-width="10" stroke-linecap="round"><path d="M162 342 Q182 362 204 342"/><path d="M308 342 Q330 362 350 342"/></g>
+</svg>

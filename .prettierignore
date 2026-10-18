@@ -1,0 +1,6 @@
+dist/
+.astro/
+e2e-report/
+e2e-results/
+worker-configuration.d.ts
+package-lock.json

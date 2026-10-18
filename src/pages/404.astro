@@ -1,0 +1,16 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Piggy from "../components/Piggy.astro";
+---
+
+<Layout title="Not found" crumbs={[{ href: "/", label: "Home" }]}>
+  <div class="card p-4">
+    <Piggy class="mx-auto h-16 w-16" />
+    <p class="mt-3 text-center">
+      This page doesn't exist, or you don't have access to it.
+    </p>
+    <a href="/" class="btn btn-primary mt-3 w-full">
+      Go home
+    </a>
+  </div>
+</Layout>

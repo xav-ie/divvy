@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- A pie with one slice pulled out: your share. -->
+  <rect width="512" height="512" fill="#0b7560"/>
+  <g fill="#fff">
+    <path d="M256 256 L394.56 176 A160 160 0 1 1 256 96 Z"/>
+    <path transform="translate(16 -28)" d="M256 256 L256 96 A160 160 0 0 1 394.56 176 Z"/>
+  </g>
+</svg>

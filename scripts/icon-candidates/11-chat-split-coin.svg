@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- A chat bubble holding a split coin: settling up between friends (flat). -->
+  <defs><radialGradient id="bg" cx="28%" cy="18%" r="95%"><stop offset="0" stop-color="#14a37f"/><stop offset="1" stop-color="#095f4c"/></radialGradient></defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <path d="M112 112 H400 Q432 112 432 144 V320 Q432 352 400 352 H220 L150 416 L160 352 H112 Q80 352 80 320 V144 Q80 112 112 112 Z" fill="#fff"/>
+  <clipPath id="l"><rect x="0" y="0" width="246" height="512"/></clipPath>
+  <clipPath id="r"><rect x="270" y="0" width="242" height="512"/></clipPath>
+  <circle cx="246" cy="232" r="88" fill="#0b7560" clip-path="url(#l)"/>
+  <circle cx="266" cy="232" r="88" fill="#5cd6a8" clip-path="url(#r)"/>
+</svg>

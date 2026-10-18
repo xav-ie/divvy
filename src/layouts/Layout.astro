@@ -1,0 +1,328 @@
+---
+import { ClientRouter } from "astro:transitions";
+import NavIcon from "../components/NavIcon.astro";
+import Piggy from "../components/Piggy.astro";
+import "../styles/global.css";
+
+interface Crumb {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  title: string;
+  /** Sub-pages: the parent trail, outermost first; the back button goes to the last one. */
+  crumbs?: Crumb[];
+  /** Older form of `crumbs`: just the back target. */
+  back?: string;
+  /** Short name of this page for the breadcrumb (default `title`). */
+  crumb?: string;
+  /** Hide the bottom navigation (full-screen forms with a sticky Save). */
+  form?: boolean;
+}
+
+const { title, back, crumb = title, form = false } = Astro.props;
+const top: Record<string, string> = {
+  "/": "Home",
+  "/groups": "Groups",
+  "/profile": "Profile",
+};
+const crumbs: Crumb[] =
+  Astro.props.crumbs ??
+  (back ? [{ href: back, label: top[back] ?? "Back" }] : []);
+const parent = crumbs.at(-1);
+const path = Astro.url.pathname;
+const nav = [
+  {
+    href: "/",
+    label: "Home",
+    icon: "home" as const,
+    under: path.startsWith("/people"),
+  },
+  {
+    href: "/groups",
+    label: "Groups",
+    icon: "groups" as const,
+    under:
+      path.startsWith("/groups/") ||
+      path.startsWith("/expenses") ||
+      path.startsWith("/settle") ||
+      path.startsWith("/recurring"),
+  },
+  {
+    href: "/profile",
+    label: "Profile",
+    icon: "profile" as const,
+    under: path.startsWith("/link"),
+  },
+].map((n) => {
+  // The tab's own page is current; a page inside it only marks the tab, without aria-current.
+  const current = !parent && path === n.href;
+  // The trail's root names the tab; without a trail, fall back to the URL.
+  const inside =
+    !current && (crumbs.length ? crumbs[0]!.href === n.href : n.under);
+  return { ...n, current, inside };
+});
+// A tab's own page doesn't repeat its name: the highlighted tab already says it.
+const isTab = nav.some((n) => n.current);
+---
+
+<html lang="en" class:list={[form && "form-page"]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <meta name="color-scheme" content="light dark" />
+    {/* Installable app. Behind Cloudflare Access the manifest needs cookies. */}
+    <link
+      rel="manifest"
+      href="/manifest.webmanifest"
+      crossorigin="use-credentials"
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta
+      name="theme-color"
+      content="#f6f6f4"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#111113"
+      media="(prefers-color-scheme: dark)"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="divvy" />
+    <title>{title} · divvy</title>
+    <link
+      rel="preload"
+      href="/fonts/nunito-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    {/* Client-side page swaps, instant: no fade or size morph (see global.css). */}
+    <ClientRouter />
+  </head>
+  <body class="min-h-dvh">
+    <header
+      class="sticky top-0 z-20 border-b border-line bg-bg/95 pt-[env(safe-area-inset-top)] backdrop-blur select-none"
+      transition:animate="none"
+    >
+      {/* The primary bar is the same everywhere; on phones sub-pages swap it for the back row. */}
+      <div
+        class:list={[
+          "mx-auto min-h-14 max-w-3xl items-center gap-2 pr-4 pl-2 md:max-w-5xl md:px-4",
+          parent ? "hidden md:flex" : "flex",
+        ]}
+      >
+        <a href="/" class="btn btn-ghost px-2 text-lg font-bold">
+          <Piggy class="h-7 w-7" />
+          divvy
+        </a>
+        {!parent && (
+          <h1
+            class:list={[
+              isTab
+                ? "sr-only"
+                : "min-w-0 flex-1 truncate text-lg font-semibold",
+            ]}
+            title={title}
+          >
+            {title}
+          </h1>
+        )}
+        {/* Sub-pages on desktop: the trail sits inline after the brand, in this same bar. */}
+        {parent && (
+          <nav aria-label="Breadcrumb" class="hidden min-w-0 flex-1 md:flex">
+            <ol class="flex min-w-0 items-center gap-1 overflow-hidden">
+              {crumbs.map((c) => (
+                <li class="flex shrink-0 items-center gap-1">
+                  <span aria-hidden="true" class="text-muted">
+                    /
+                  </span>
+                  <a
+                    href={c.href}
+                    class="block min-h-11 max-w-40 min-w-11 truncate rounded-lg px-1 leading-[2.75rem] text-accent hover:underline"
+                    title={c.label}
+                  >
+                    {c.label}
+                  </a>
+                </li>
+              ))}
+              <li
+                aria-current="page"
+                class="flex min-w-0 shrink items-center gap-1 font-semibold"
+                title={crumb}
+              >
+                <span aria-hidden="true" class="font-normal text-muted">
+                  /
+                </span>
+                <span class="truncate">{crumb}</span>
+              </li>
+            </ol>
+          </nav>
+        )}
+        <nav aria-label="Main" class="ml-auto hidden gap-1 md:flex">
+          {nav.map((n) => (
+            <a
+              href={n.href}
+              class:list={[
+                "btn",
+                n.current
+                  ? "btn-secondary text-accent"
+                  : n.inside
+                    ? "btn-ghost text-accent underline decoration-2 underline-offset-8"
+                    : "btn-ghost text-fg",
+              ]}
+              aria-current={n.current ? "page" : undefined}
+              data-astro-prefetch="viewport"
+              data-state={
+                n.current ? "current" : n.inside ? "inside" : undefined
+              }
+            >
+              <NavIcon name={n.icon} class="h-5 w-5" />
+              {n.label}
+            </a>
+          ))}
+        </nav>
+        {!parent && <slot name="header" />}
+      </div>
+      {parent && (
+        <div class="md:hidden">
+          <div class="flex min-h-14 items-center gap-1 pr-4 pl-1">
+            <a
+              href={parent.href}
+              class="btn btn-ghost min-w-11 shrink px-2"
+              aria-label={`Back to ${parent.label}`}
+            >
+              <svg
+                aria-hidden="true"
+                class="shrink-0"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+              <span class="truncate">{parent.label}</span>
+            </a>
+            <span class="flex-1" />
+            <slot name="header" />
+          </div>
+        </div>
+      )}
+      {parent && (
+        <h1
+          class="mx-auto max-w-3xl truncate px-4 pb-3 text-xl font-semibold md:sr-only"
+          title={title}
+        >
+          {title}
+        </h1>
+      )}
+    </header>
+
+    <main
+      class:list={[
+        "mx-auto max-w-3xl px-4 pt-4",
+        form ? "pb-32" : "pb-28 md:pb-12",
+      ]}
+      transition:animate="none"
+    >
+      <slot />
+    </main>
+
+    {!form && (
+      <nav
+        aria-label="Main"
+        class="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] select-none md:hidden"
+        transition:animate="none"
+      >
+        <div class="grid grid-cols-3">
+          {nav.map((n) => (
+            <a
+              href={n.href}
+              class:list={[
+                "flex min-h-16 flex-col items-center justify-center gap-0.5 text-sm",
+                n.current
+                  ? "font-semibold text-accent"
+                  : n.inside
+                    ? "text-accent"
+                    : "text-muted",
+              ]}
+              aria-current={n.current ? "page" : undefined}
+              data-astro-prefetch="viewport"
+              data-state={
+                n.current ? "current" : n.inside ? "inside" : undefined
+              }
+            >
+              <span
+                class:list={[
+                  "flex h-8 w-14 items-center justify-center rounded-full",
+                  n.current && "bg-accent-soft",
+                ]}
+              >
+                <NavIcon name={n.icon} />
+              </span>
+              {n.label}
+            </a>
+          ))}
+        </div>
+      </nav>
+    )}
+
+    <div
+      id="toasts"
+      aria-live="polite"
+      class:list={[
+        "pointer-events-none fixed inset-x-0 z-50 mx-auto flex max-w-sm flex-col gap-2 px-4",
+        form
+          ? "bottom-36"
+          : "bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-6",
+      ]}
+    ></div>
+
+    <script>
+      import { showFlash } from "../client/toast.ts";
+      // Only so the app can be installed; the worker never handles requests.
+      if ("serviceWorker" in navigator)
+        addEventListener(
+          "load",
+          () => void navigator.serviceWorker.register("/sw.js", { scope: "/" }),
+        );
+      let first = true;
+      // Runs on the first load and after every client-side navigation.
+      document.addEventListener("astro:page-load", () => {
+        showFlash();
+        // Screen readers: announce the new page by moving focus to its heading.
+        if (!first) {
+          const h1 = document.querySelector<HTMLElement>("h1");
+          if (h1) {
+            h1.tabIndex = -1;
+            h1.focus({ preventScroll: true });
+          }
+        }
+        first = false;
+      });
+      // Keep the focused field visible above the on-screen keyboard.
+      document.addEventListener("focusin", (e) => {
+        const el = e.target as HTMLElement;
+        if (!el.matches("input, textarea, select")) return;
+        setTimeout(
+          () => el.scrollIntoView({ block: "center", behavior: "smooth" }),
+          300,
+        );
+      });
+    </script>
+  </body>
+</html>

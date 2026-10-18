@@ -1,0 +1,57 @@
+---
+import AssistantAccess from "../components/AssistantAccess.tsx";
+import SignInEmails from "../components/SignInEmails.tsx";
+import VenmoUsername from "../components/VenmoUsername.tsx";
+import ProfileForm from "../components/ProfileForm.tsx";
+import Skeleton from "../components/Skeleton.astro";
+import SwitchPerson from "../components/SwitchPerson.tsx";
+import Layout from "../layouts/Layout.astro";
+import { listEmails } from "../services/emails.ts";
+import { listTokens } from "../services/tokens.ts";
+
+const { user } = Astro.locals.ctx;
+const picker = Astro.locals.auth.mode === "picker";
+---
+
+<Layout title="Profile">
+  <p class="mb-4 text-muted">
+    Signed in as{" "}
+    <span class="font-medium text-fg" data-testid="user-email">
+      {user.email}
+    </span>
+  </p>
+  <ProfileForm client:only="react" name={user.name}>
+    <Skeleton slot="fallback" rows={2} />
+  </ProfileForm>
+  <VenmoUsername client:only="react" me={user}>
+    <Skeleton slot="fallback" rows={2} />
+  </VenmoUsername>
+  <SignInEmails
+    client:only="react"
+    initial={listEmails(Astro.locals.ctx, Astro.locals.auth.mode)}
+  >
+    <Skeleton slot="fallback" rows={2} />
+  </SignInEmails>
+  <AssistantAccess client:only="react" initial={listTokens(Astro.locals.ctx)}>
+    <Skeleton slot="fallback" rows={3} />
+  </AssistantAccess>
+  {picker ? (
+    <div class="mt-6">
+      <SwitchPerson client:only="react" label="Switch person">
+        <Skeleton slot="fallback" rows={1} />
+      </SwitchPerson>
+      <SwitchPerson client:only="react" label="Sign out">
+        <Skeleton slot="fallback" rows={1} />
+      </SwitchPerson>
+    </div>
+  ) : (
+    <a
+      class="btn btn-secondary mt-6 w-full"
+      href="/cdn-cgi/access/logout"
+      data-astro-reload
+      data-astro-prefetch="false"
+    >
+      Sign out
+    </a>
+  )}
+</Layout>

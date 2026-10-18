@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- A coin hamster with cheeks stuffed with coins: saving to share. -->
+  <defs><radialGradient id="bg" cx="28%" cy="18%" r="95%"><stop offset="0" stop-color="#14a37f"/><stop offset="1" stop-color="#095f4c"/></radialGradient></defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g fill="#fff4dc"><circle cx="176" cy="158" r="40"/><circle cx="336" cy="158" r="40"/></g>
+  <g fill="#5cd6a8"><circle cx="176" cy="158" r="20"/><circle cx="336" cy="158" r="20"/></g>
+  <circle cx="256" cy="270" r="136" fill="#fff4dc"/>
+  <circle cx="256" cy="270" r="116" fill="none" stroke="#efdcb0" stroke-width="10"/>
+  <g fill="#fff4dc"><circle cx="150" cy="322" r="74"/><circle cx="362" cy="322" r="74"/></g>
+  <g fill="#f5b942" stroke="#c98a1c" stroke-width="7"><circle cx="138" cy="336" r="28"/><circle cx="374" cy="336" r="28"/></g>
+  <g fill="#0a4a3c"><ellipse cx="214" cy="252" rx="16" ry="20.0"/><ellipse cx="298" cy="252" rx="16" ry="20.0"/></g>
+  <g fill="#fff"><circle cx="220" cy="244" r="5.333333333333333"/><circle cx="304" cy="244" r="5.333333333333333"/></g>
+  <ellipse cx="256" cy="292" rx="13" ry="9" fill="#0a4a3c"/>
+  <path d="M256 300 V314 M238 322 Q256 336 274 322" fill="none" stroke="#0a4a3c" stroke-width="9" stroke-linecap="round"/>
+  <rect x="246" y="326" width="20" height="18" rx="5" fill="#fff" stroke="#0a4a3c" stroke-width="5"/>
+</svg>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- A green piggy on a cream tile. -->
+  <rect width="512" height="512" fill="#fff4dc"/>
+  <g fill="#0b7560" stroke="#0b7560" stroke-width="22" stroke-linejoin="round"><path d="M131 194 L139 102 L213 156 Z"/><path d="M381 194 L373 102 L299 156 Z"/></g>
+  <g fill="#ff8f7d"><path d="M149 168 L153 128 L187 156 Z"/><path d="M363 168 L359 128 L325 156 Z"/></g>
+  <circle cx="256" cy="280" r="158" fill="#0b7560"/>
+  <circle cx="256" cy="280" r="138" fill="none" stroke="#0a5f4d" stroke-width="10"/>
+  <rect x="220" y="148" width="72" height="16" rx="8" fill="#fff4dc"/>
+  <g fill="#fff4dc"><ellipse cx="200" cy="268" rx="17" ry="20.4"/><ellipse cx="312" cy="268" rx="17" ry="20.4"/></g>
+  <g fill="#fff"><circle cx="205.95" cy="260.35" r="6.46"/><circle cx="317.95" cy="260.35" r="6.46"/></g>
+  <ellipse cx="256" cy="322" rx="60" ry="44" fill="#ff8f7d"/>
+  <g fill="#c4574a"><ellipse cx="236.2" cy="322" rx="9.0" ry="13.2"/><ellipse cx="275.8" cy="322" rx="9.0" ry="13.2"/></g>
+</svg>

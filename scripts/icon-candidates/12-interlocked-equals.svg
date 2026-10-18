@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Two interlocking rounded links forming an equals sign (abstract monogram). -->
+  <rect width="512" height="512" fill="#08503f"/>
+  <rect x="96" y="148" width="320" height="96" rx="48" fill="none" stroke="#5cd6a8" stroke-width="36"/>
+  <rect x="96" y="268" width="320" height="96" rx="48" fill="none" stroke="#fff" stroke-width="36"/>
+  <path d="M164 230 V262" stroke="#5cd6a8" stroke-width="36"/>
+  <path d="M348 250 V282" stroke="#fff" stroke-width="36"/>
+</svg>

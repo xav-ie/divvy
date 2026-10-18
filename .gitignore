@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.astro/
+result
+data/
+e2e-results/
+e2e-report/
+.wrangler/
+.dev.vars*
+!.dev.vars.example

@@ -1,0 +1,43 @@
+---
+import ExpenseEditor from "../../../../components/ExpenseEditor.tsx";
+import Skeleton from "../../../../components/Skeleton.astro";
+import Layout from "../../../../layouts/Layout.astro";
+import { ServiceError } from "../../../../services/errors.ts";
+import { getGroup } from "../../../../services/groups.ts";
+
+const { ctx } = Astro.locals;
+let group;
+try {
+  group = getGroup(ctx, Number(Astro.params.groupId));
+} catch (err) {
+  if (err instanceof ServiceError) return Astro.rewrite("/404");
+  throw err;
+}
+---
+
+<Layout
+  title={`Add expense · ${group.name}`}
+  crumb="Add expense"
+  crumbs={[
+    { href: "/groups", label: "Groups" },
+    {
+      href: `/groups/${group.id}`,
+      label: `${group.emoji} ${group.name}`.trim(),
+    },
+  ]}
+  form
+>
+  <ExpenseEditor
+    client:only="react"
+    groupId={group.id}
+    me={ctx.user.memberId}
+    members={group.members.map((m) => ({
+      id: m.id,
+      name: m.name,
+      isYou: m.isYou,
+      placeholder: m.placeholder,
+    }))}
+  >
+    <Skeleton slot="fallback" rows={5} />
+  </ExpenseEditor>
+</Layout>

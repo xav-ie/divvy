@@ -1,0 +1,5 @@
+# Settings a new instance is asked for (the Deploy to Cloudflare button
+# prompts for each; `wrangler secret put NAME` sets them by hand). Both come
+# from the Cloudflare Access application in front of divvy.
+DIVVY_ACCESS_TEAM_DOMAIN=yourteam.cloudflareaccess.com # Zero Trust > Settings > Team domain
+DIVVY_ACCESS_AUD=application-audience-tag # the Access application's AUD tag

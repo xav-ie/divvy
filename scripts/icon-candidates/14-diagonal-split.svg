@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- A minimal geometric split: the tile cut diagonally into two greens. -->
+  <rect width="512" height="512" fill="#0b7560"/>
+  <path d="M0 512 L512 0 V512 Z" fill="#5cd6a8"/>
+  <path d="M-10 522 L522 -10" stroke="#fff" stroke-width="36"/>
+  <circle cx="160" cy="160" r="54" fill="#fff"/>
+  <circle cx="352" cy="352" r="54" fill="#0b7560"/>
+</svg>

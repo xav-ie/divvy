@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- A division sign whose dots are coins. -->
+  <rect width="512" height="512" fill="#0b7560"/>
+  <rect x="96" y="226" width="320" height="60" rx="30" fill="#fff"/>
+  <g fill="#fff"><circle cx="256" cy="128" r="64"/><circle cx="256" cy="384" r="64"/></g>
+  <g fill="none" stroke="#0b7560" stroke-width="12"><circle cx="256" cy="128" r="40"/><circle cx="256" cy="384" r="40"/></g>
+</svg>

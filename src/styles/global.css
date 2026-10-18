@@ -1,0 +1,211 @@
+@import "tailwindcss";
+
+/* Nunito (SIL OFL 1.1, public/fonts/OFL-Nunito.txt): headings and the big
+   balance sentences only. Body text stays the system stack. */
+@font-face {
+  font-family: "Nunito";
+  src: url("/fonts/nunito-latin.woff2") format("woff2");
+  font-weight: 600 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme inline {
+  --font-sans:
+    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --font-display: "Nunito", ui-rounded, system-ui, sans-serif;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+}
+
+:root {
+  color-scheme: light dark;
+  --bg: #f6f6f4;
+  --surface: #ffffff;
+  --fg: #1c1c1e;
+  --muted: #5d5d63;
+  --line: #e2e2e0;
+  /* Emerald-teal accent; AA on white, bg and accent-soft, white text on it. */
+  --accent: #0b7560;
+  --accent-soft: #ddf3eb;
+  --on-accent: #ffffff;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111113;
+    --surface: #1c1c1f;
+    --fg: #f2f2f3;
+    --muted: #a6a6ad;
+    --line: #34343a;
+    --accent: #5cd6a8;
+    --accent-soft: #13322a;
+    --on-accent: #04281c;
+    --danger: #ff8a80;
+    --danger-soft: #3a1d1b;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    /* Pages with and without a scrollbar line up, so nothing jumps between them. */
+    scrollbar-gutter: stable;
+    /* Installed app: no accidental pull-to-refresh or rubber-banding of the whole page. */
+    overscroll-behavior-y: none;
+    /* Scrolled-to elements stay clear of the sticky header and the bottom bar. */
+    scroll-padding-top: 4.5rem;
+    scroll-padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
+  html.form-page {
+    scroll-padding-bottom: calc(9rem + env(safe-area-inset-bottom));
+  }
+  body {
+    @apply bg-bg font-sans text-fg antialiased;
+    overflow-wrap: anywhere;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+  h1,
+  h2 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-xl px-4 text-base font-medium transition duration-150 select-none active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 disabled:active:translate-y-0;
+  }
+  .btn-primary {
+    @apply bg-accent text-on-accent shadow-sm hover:opacity-90 hover:shadow-md;
+  }
+  .btn-secondary {
+    @apply border border-line bg-surface text-fg shadow-xs hover:bg-accent-soft;
+  }
+  .btn-ghost {
+    @apply text-accent hover:bg-accent-soft;
+  }
+  .btn-danger {
+    @apply border border-danger bg-surface text-danger hover:bg-danger-soft;
+  }
+  .input {
+    @apply min-h-11 w-full min-w-0 rounded-xl border border-line bg-surface px-3 text-base text-fg placeholder:text-muted/60;
+  }
+  .input[aria-invalid="true"] {
+    @apply border-danger;
+  }
+  .label {
+    @apply mb-1 block truncate text-sm font-medium text-muted;
+  }
+  /* Soft shadow instead of a hard border; dark mode keeps a faint edge. */
+  .card {
+    @apply rounded-2xl bg-surface shadow-[0_1px_2px_rgb(0_0_0/0.05),0_4px_16px_-2px_rgb(0_0_0/0.08)] dark:shadow-[0_0_0_1px_rgb(255_255_255/0.06),0_4px_16px_rgb(0_0_0/0.4)];
+  }
+  .chip {
+    /* Text goes in a .truncate child so long names end in an ellipsis. */
+    @apply inline-flex max-w-full min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full border border-line bg-surface px-4 align-top text-base transition duration-150 select-none active:scale-[0.98];
+  }
+  .chip:has(.avatar) {
+    @apply pl-1.5;
+  }
+  .chip[aria-pressed="true"],
+  .chip[aria-checked="true"] {
+    @apply border-accent bg-accent-soft font-medium text-accent;
+  }
+  .skeleton {
+    @apply animate-pulse rounded-lg bg-line;
+  }
+  .error {
+    @apply text-sm text-danger;
+  }
+  .row-link {
+    @apply flex min-h-14 items-center gap-3 px-4 py-3 transition-colors duration-150 hover:bg-accent-soft/60 active:bg-accent-soft;
+  }
+  /* Display font for the big balance sentences. */
+  .display {
+    @apply font-display text-2xl leading-tight font-extrabold;
+  }
+  /* Initials with a stable per-person hue (--hue, set inline). */
+  .avatar {
+    @apply inline-flex shrink-0 items-center justify-center rounded-full font-display font-bold select-none;
+    background-color: hsl(var(--hue) 70% 88%);
+    color: hsl(var(--hue) 60% 24%);
+  }
+  .avatar-placeholder {
+    @apply border-[1.5px] border-dashed;
+    background-color: transparent;
+    border-color: hsl(var(--hue) 45% 40%);
+    color: hsl(var(--hue) 60% 26%);
+  }
+  /* A person mentioned in a sentence: their avatar hue. */
+  .person {
+    color: hsl(var(--hue) 60% 26%);
+    font-weight: 500;
+  }
+  .display .person {
+    /* Display sentences are already extrabold; the color is the signal. */
+    font-weight: inherit;
+  }
+  /* Soft wash behind a person's own page header, in their hue. */
+  .person-hero {
+    background: hsl(var(--hue) 70% 93% / 0.6);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .person {
+    color: hsl(var(--hue) 80% 82%);
+  }
+  .person-hero {
+    background: hsl(var(--hue) 40% 18% / 0.5);
+  }
+  .avatar {
+    background-color: hsl(var(--hue) 35% 26%);
+    color: hsl(var(--hue) 80% 86%);
+  }
+  .avatar-placeholder {
+    background-color: transparent;
+    border-color: hsl(var(--hue) 50% 65%);
+    color: hsl(var(--hue) 80% 82%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .btn:active,
+  .chip:active {
+    transform: none;
+  }
+}
+
+/* Group balances: the Simplify switch picks which list shows. */
+.simplify:has(input[name="simplify"]:checked) .pairs,
+.simplify:not(:has(input[name="simplify"]:checked)) .simplified {
+  display: none;
+}
+
+/* Page swaps are instant: no cross-fade, and no morphing of an element between
+   its old and new size. */
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation: none;
+}

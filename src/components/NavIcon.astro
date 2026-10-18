@@ -1,0 +1,42 @@
+---
+// Lucide icons (ISC license, lucide.dev), inlined: the same 24px, 2px-stroke,
+// round-cap style as xav.ie's inline icons. Decorative; the label names the link.
+interface Props {
+  name: "home" | "groups" | "profile";
+  class?: string;
+}
+const { name, class: className } = Astro.props;
+---
+
+<svg
+  aria-hidden="true"
+  class:list={["h-6 w-6 shrink-0", className]}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  {name === "home" && (
+    <>
+      <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
+      <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    </>
+  )}
+  {name === "groups" && (
+    <>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </>
+  )}
+  {name === "profile" && (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="10" r="3" />
+      <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+    </>
+  )}
+</svg>

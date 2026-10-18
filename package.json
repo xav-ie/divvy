@@ -1,0 +1,55 @@
+{
+  "name": "divvy",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "deploy": "wrangler deploy",
+    "preview": "astro build && wrangler dev --local",
+    "types": "wrangler types",
+    "check": "npm run check:types && npm run check:format && npm run check:knip",
+    "check:types": "astro check && tsc --noEmit",
+    "check:format": "prettier --check .",
+    "check:knip": "knip",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "e2e/run.sh",
+    "changeset": "changeset",
+    "version": "changeset version && npm install --package-lock-only",
+    "release": "changeset tag"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^14.4.0",
+    "@astrojs/react": "^7.0.1",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "astro": "^7.4.0",
+    "jose": "^6.2.12",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@changesets/cli": "^3.0.3",
+    "@cloudflare/vitest-plugin": "^1.4.4",
+    "@playwright/test": "1.63.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "fast-check": "^4.10.2",
+    "knip": "^6.42.0",
+    "prettier": "^3.9.10",
+    "prettier-plugin-astro": "^1.1.1",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.4",
+    "wrangler": "^4.151.1"
+  }
+}

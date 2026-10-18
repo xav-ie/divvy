@@ -1,0 +1,393 @@
+---
+import ActivityList from "../../../components/ActivityList.astro";
+import Avatar from "../../../components/Avatar.tsx";
+import Chevron from "../../../components/Chevron.astro";
+import RichText from "../../../components/RichText.astro";
+import DeleteAction from "../../../components/DeleteAction.tsx";
+import MembersPanel from "../../../components/MembersPanel.tsx";
+import RecurringBills from "../../../components/RecurringTab.tsx";
+import SimplifySwitch from "../../../components/SimplifySwitch.tsx";
+import Skeleton from "../../../components/Skeleton.astro";
+import Layout from "../../../layouts/Layout.astro";
+import { formatDate } from "../../../client/format.ts";
+import { formatCents } from "../../../domain/money.ts";
+import { listActivity } from "../../../services/activity.ts";
+import { groupBalances, type BalanceRow } from "../../../services/balances.ts";
+import { venmoPlan } from "../../../services/venmo.ts";
+import VenmoPay from "../../../components/VenmoPay.tsx";
+import { ServiceError } from "../../../services/errors.ts";
+import { listExpenses } from "../../../services/expenses.ts";
+import { getGroup } from "../../../services/groups.ts";
+import { listPayments } from "../../../services/payments.ts";
+import { listRecurring } from "../../../services/recurring.ts";
+
+const { ctx } = Astro.locals;
+const groupId = Number(Astro.params.groupId);
+let group;
+try {
+  group = getGroup(ctx, groupId);
+} catch (err) {
+  if (err instanceof ServiceError) return Astro.rewrite("/404");
+  throw err;
+}
+
+// Recurring bills live in the Expenses tab now; old links open that section.
+if (Astro.url.searchParams.get("tab") === "recurring")
+  return Astro.redirect(`/groups/${group.id}?recurring=1#recurring`);
+
+const tabs = [
+  { id: "expenses", label: "Expenses" },
+  { id: "balances", label: "Balances" },
+  { id: "members", label: "Members" },
+  { id: "activity", label: "Activity" },
+] as const;
+const tab =
+  tabs.find((t) => t.id === Astro.url.searchParams.get("tab"))?.id ??
+  "expenses";
+const me = ctx.user.memberId;
+const names = new Map(
+  group.members.map((m) => [m.id, m.isYou ? "You" : m.name]),
+);
+const nameOf = (id: number) => names.get(id) ?? "A former member";
+// The cast for the sentence colorizer: ids make hues stable across renames.
+const people = group.members.map((m) => ({ id: m.id, name: m.name }));
+const viewer = { id: me };
+
+type Entry =
+  | {
+      kind: "expense";
+      date: string;
+      created: string;
+      e: ReturnType<typeof listExpenses>[number];
+    }
+  | {
+      kind: "payment";
+      date: string;
+      created: string;
+      p: ReturnType<typeof listPayments>[number];
+    };
+let entries: Entry[] = [];
+if (tab === "expenses") {
+  entries = [
+    ...listExpenses(ctx, group.id).map((e): Entry => ({
+      kind: "expense",
+      date: e.date,
+      created: e.created,
+      e,
+    })),
+    ...listPayments(ctx, group.id).map((p): Entry => ({
+      kind: "payment",
+      date: p.date,
+      created: p.created,
+      p,
+    })),
+  ].sort(
+    (a, b) =>
+      b.date.localeCompare(a.date) || b.created.localeCompare(a.created),
+  );
+}
+
+/** "You paid $60.00" / "Ana and Ben paid $60.00". */
+function paidLine(payers: Record<number, number>, total: number): string {
+  const ids = Object.keys(payers).map(Number);
+  const who = ids.map(nameOf);
+  const list =
+    who.length <= 2
+      ? who.join(" and ")
+      : `${who.slice(0, -1).join(", ")} and ${who.at(-1)}`;
+  return `${list} paid ${formatCents(total)}`;
+}
+
+const balances =
+  tab === "balances" || tab === "members" ? groupBalances(ctx, group.id) : null;
+const recurring = tab === "expenses" ? listRecurring(ctx, group.id) : [];
+const recurringMembers = group.members.map((m) => ({
+  id: m.id,
+  name: m.isYou ? "You" : m.name,
+}));
+// A Venmo pay link on the rows you owe, in the list the group's setting uses.
+const payFor = (d: BalanceRow, cls: string) => {
+  if (
+    !balances ||
+    d.from !== ctx.user.memberId ||
+    cls !== (balances.simplify ? "simplified" : "pairs")
+  )
+    return null;
+  const pay = venmoPlan(ctx, d.to, group.id)?.pays[0];
+  return pay?.cents === d.cents ? pay : null;
+};
+const settleHref = (d: BalanceRow) =>
+  `/settle?groupId=${group.id}&from=${d.from}&to=${d.to}&cents=${d.cents}`;
+const key = (rows: BalanceRow[]) =>
+  rows
+    .map((d) => `${d.from}>${d.to}:${d.cents}`)
+    .sort()
+    .join();
+const sameRows = (a: BalanceRow[], b: BalanceRow[]) => key(a) === key(b);
+const otherOf = (d: BalanceRow) => (d.from === me ? d.to : d.from);
+const placeholder = new Set(
+  group.members.filter((m) => m.placeholder).map((m) => m.id),
+);
+/** Whose face a balance row shows: the other person, or the one who owes. */
+const faceOf = (d: BalanceRow) => {
+  const id = d.involvesYou ? otherOf(d) : d.from;
+  return { id, name: id === d.from ? d.fromName : d.toName };
+};
+const activity =
+  tab === "activity" ? listActivity(ctx, { groupId: group.id }) : [];
+const title = `${group.emoji} ${group.name}`.trim();
+---
+
+<Layout title={title} crumbs={[{ href: "/groups", label: "Groups" }]}>
+  <p class="text-sm text-muted">
+    <RichText
+      text={group.members.map((m) => (m.isYou ? "You" : m.name)).join(", ")}
+      people={people}
+      viewer={viewer}
+    />
+  </p>
+
+  <nav
+    aria-label="Group sections"
+    class="mt-3 flex gap-1 rounded-xl bg-line/50 p-1"
+  >
+    {tabs.map((t) => (
+      <a
+        href={`/groups/${group.id}?tab=${t.id}`}
+        data-astro-prefetch="viewport"
+        aria-current={t.id === tab ? "page" : undefined}
+        class:list={[
+          "flex min-h-11 flex-auto items-center justify-center whitespace-nowrap rounded-lg px-1 text-sm",
+          t.id === tab
+            ? "bg-surface font-semibold text-fg shadow-sm"
+            : "text-muted",
+        ]}
+      >
+        {t.label}
+      </a>
+    ))}
+  </nav>
+
+  {tab === "expenses" && (
+    <section class="mt-4" aria-label="Expenses">
+      <div class="mb-4 grid grid-cols-2 gap-2">
+        <a href={`/groups/${group.id}/expenses/new`} class="btn btn-primary">
+          Add expense
+        </a>
+        <a href={`/settle?groupId=${group.id}`} class="btn btn-secondary">
+          Record payment
+        </a>
+      </div>
+      {entries.length === 0 ? (
+        <p class="card p-4 text-muted">No expenses yet. Add the first one.</p>
+      ) : (
+        <ul class="card divide-y divide-line overflow-hidden">
+          {entries.map((x) =>
+            x.kind === "expense" ? (
+              <li>
+                <a href={`/expenses/${x.e.id}`} class="row-link">
+                  <span class="min-w-0 flex-1">
+                    <span class="flex items-baseline justify-between gap-2">
+                      <span class="truncate font-medium">{x.e.title}</span>
+                      <span class="shrink-0 font-medium">
+                        {formatCents(x.e.totalCents)}
+                      </span>
+                    </span>
+                    <span class="block text-sm text-muted">
+                      {formatDate(x.e.date)} ·{" "}
+                      <RichText
+                        text={paidLine(x.e.payers, x.e.totalCents)}
+                        people={people}
+                        viewer={viewer}
+                      />
+                      {x.e.shares[me]
+                        ? ` · your share ${formatCents(x.e.shares[me])}`
+                        : " · you're not in this one"}
+                    </span>
+                  </span>
+                  <Chevron />
+                </a>
+              </li>
+            ) : (
+              <li>
+                <details class="group/pay">
+                  <summary class="row-link cursor-pointer list-none">
+                    <span class="min-w-0 flex-1">
+                      <span class="block font-medium">
+                        <RichText
+                          text={`${nameOf(x.p.fromMember)} paid ${x.p.toMember === me ? "you" : nameOf(x.p.toMember)} ${formatCents(x.p.cents)}`}
+                          people={people}
+                          viewer={viewer}
+                        />
+                      </span>
+                      <span class="block text-sm text-muted">
+                        {formatDate(x.p.date)} · payment
+                        {x.p.note && ` · ${x.p.note}`}
+                      </span>
+                    </span>
+                    <span class="text-sm text-accent">
+                      {x.p.canEdit ? "More" : ""}
+                    </span>
+                  </summary>
+                  <div class="px-4 pb-4">
+                    {x.p.canEdit ? (
+                      <DeleteAction
+                        client:only="react"
+                        url={`/api/payments/${x.p.id}`}
+                        redirect={`/groups/${group.id}`}
+                        label="Delete payment"
+                        question={`Delete the payment of ${formatCents(x.p.cents)}?`}
+                        done="Payment deleted"
+                        undo={{
+                          url: `/api/payments/${x.p.id}/restore`,
+                          done: "Payment restored",
+                        }}
+                      />
+                    ) : (
+                      <p class="text-sm text-muted">
+                        Only the person who recorded this payment, or the two
+                        people in it, can delete it.
+                      </p>
+                    )}
+                  </div>
+                </details>
+              </li>
+            ),
+          )}
+        </ul>
+      )}
+      <RecurringBills
+        client:only="react"
+        groupId={group.id}
+        initial={recurring}
+        members={recurringMembers}
+      >
+        <Skeleton slot="fallback" rows={1} />
+      </RecurringBills>
+    </section>
+  )}
+
+  {balances && tab === "balances" && (
+    <section class="mt-4 space-y-4" aria-label="Balances">
+      <div class="simplify flex flex-col gap-3">
+        <SimplifySwitch
+          client:load
+          groupId={group.id}
+          on={balances.simplify}
+          noChange={sameRows(balances.pairs, balances.simplified)}
+        />
+        {[
+          { rows: balances.pairs, cls: "pairs", label: "Who owes whom" },
+          {
+            rows: balances.simplified,
+            cls: "simplified",
+            label: "Simplified payments",
+          },
+        ].map(({ rows, cls, label }) => (
+          <div class={cls}>
+            {rows.length === 0 ? (
+              <p class="card p-4">Everyone is settled up.</p>
+            ) : (
+              <ul
+                class="card divide-y divide-line overflow-hidden"
+                aria-label={label}
+              >
+                {rows.map((d) => (
+                  <li class="flex flex-wrap items-center gap-2 px-4 py-3">
+                    <Avatar
+                      name={faceOf(d).name}
+                      id={faceOf(d).id}
+                      placeholder={placeholder.has(faceOf(d).id)}
+                    />
+                    {d.involvesYou ? (
+                      <a
+                        href={`/people/${otherOf(d)}?groupId=${group.id}`}
+                        class="flex min-h-11 min-w-0 flex-1 items-center gap-2 hover:underline"
+                      >
+                        <span class="flex-1">
+                          <RichText
+                            text={d.sentence}
+                            people={people}
+                            viewer={viewer}
+                          />
+                        </span>
+                        <Chevron />
+                      </a>
+                    ) : (
+                      <span class="flex min-h-11 min-w-0 flex-1 items-center">
+                        <RichText
+                          text={d.sentence}
+                          people={people}
+                          viewer={viewer}
+                        />
+                      </span>
+                    )}
+                    <a
+                      href={settleHref(d)}
+                      class="btn btn-secondary text-sm"
+                      aria-label={`Settle up: ${d.sentence}`}
+                    >
+                      Settle up
+                    </a>
+                    {payFor(d, cls) && (
+                      <div class="w-full">
+                        <VenmoPay client:load {...payFor(d, cls)!} />
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+      <div>
+        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
+          In total
+        </h2>
+        <ul class="card divide-y divide-line" aria-label="Totals per person">
+          {balances.members.map((m) => (
+            <li class="flex items-center gap-3 px-4 py-3">
+              <Avatar
+                name={m.name}
+                id={m.memberId}
+                placeholder={placeholder.has(m.memberId)}
+              />
+              <span class="min-w-0 flex-1">
+                <RichText text={m.sentence} people={people} viewer={viewer} />
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  {balances && tab === "members" && (
+    <section class="mt-4" aria-label="Members">
+      <MembersPanel
+        client:only="react"
+        groupId={group.id}
+        name={group.name}
+        emoji={group.emoji}
+        isCreator={group.isCreator}
+        createdBy={group.createdBy}
+        members={group.members}
+        balances={Object.fromEntries(
+          balances.members.map((m) => [
+            m.memberId,
+            { cents: m.cents, sentence: m.sentence },
+          ]),
+        )}
+      >
+        <Skeleton slot="fallback" rows={4} />
+      </MembersPanel>
+    </section>
+  )}
+
+  {tab === "activity" && (
+    <section class="mt-4" aria-label="Activity">
+      <ActivityList items={activity} people={people} viewerId={me} />
+    </section>
+  )}
+</Layout>

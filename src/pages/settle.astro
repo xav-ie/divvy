@@ -1,0 +1,71 @@
+---
+import SettleForm from "../components/SettleForm.tsx";
+import Skeleton from "../components/Skeleton.astro";
+import Layout from "../layouts/Layout.astro";
+import { groupBalances } from "../services/balances.ts";
+import { getGroup, listGroups } from "../services/groups.ts";
+import { getUser, venmoOfMembers } from "../db/users.ts";
+
+const { ctx } = Astro.locals;
+const q = Astro.url.searchParams;
+const num = (k: string) => (q.get(k) ? Number(q.get(k)) : undefined);
+const groupId = num("groupId");
+const from = num("from");
+const to = num("to");
+const groups = listGroups(ctx)
+  .map((g) => getGroup(ctx, g.id))
+  .filter(
+    (g) =>
+      (groupId === undefined || g.id === groupId) &&
+      [from, to].every(
+        (id) => id === undefined || g.members.some((m) => m.id === id),
+      ),
+  )
+  .map((g) => {
+    const venmo = venmoOfMembers(
+      ctx.db,
+      g.members.map((m) => m.id),
+    );
+    const owe = groupBalances(ctx, g.id).largestYouOwe;
+    return {
+      id: g.id,
+      name: g.name,
+      members: g.members.map((m) => ({
+        id: m.id,
+        name: m.name,
+        isYou: m.isYou,
+        venmo: venmo.get(m.id) ?? null,
+        venmoPhoto:
+          m.userId && getUser(ctx.db, m.userId)?.hasVenmoAvatar
+            ? `/api/users/${m.userId}/venmo-avatar`
+            : null,
+      })),
+      owe: owe && { to: owe.to, cents: owe.cents },
+    };
+  });
+---
+
+<Layout
+  title="Settle up"
+  crumbs={(() => {
+    const g = groups.find((x) => x.id === groupId);
+    return g
+      ? [
+          { href: "/groups", label: "Groups" },
+          { href: `/groups/${g.id}?tab=balances`, label: g.name },
+        ]
+      : [{ href: "/", label: "Home" }];
+  })()}
+  form
+>
+  <SettleForm
+    client:only="react"
+    groups={groups}
+    groupId={groupId}
+    from={from}
+    to={to}
+    cents={num("cents")}
+  >
+    <Skeleton slot="fallback" rows={4} />
+  </SettleForm>
+</Layout>

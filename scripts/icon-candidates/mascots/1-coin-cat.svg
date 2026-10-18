@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- A coin with cat ears, whiskers and a little pink nose. -->
+  <defs><radialGradient id="bg" cx="28%" cy="18%" r="95%"><stop offset="0" stop-color="#14a37f"/><stop offset="1" stop-color="#095f4c"/></radialGradient></defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g fill="#fff4dc" stroke="#fff4dc" stroke-width="24" stroke-linejoin="round">
+    <path d="M136 210 L146 96 L232 156 Z"/><path d="M376 210 L366 96 L280 156 Z"/>
+  </g>
+  <g fill="#ff8f7d"><path d="M162 172 L166 128 L204 154 Z"/><path d="M350 172 L346 128 L308 154 Z"/></g>
+  <circle cx="256" cy="290" r="150" fill="#fff4dc"/>
+  <circle cx="256" cy="290" r="130" fill="none" stroke="#efdcb0" stroke-width="10"/>
+  <g fill="#0a4a3c"><ellipse cx="206" cy="272" rx="18" ry="22.5"/><ellipse cx="306" cy="272" rx="18" ry="22.5"/></g>
+  <g fill="#fff"><circle cx="212" cy="264" r="6.0"/><circle cx="312" cy="264" r="6.0"/></g>
+  <path d="M244 306 L268 306 L256 320 Z" fill="#ff8f7d" stroke="#ff8f7d" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M228 334 Q242 350 256 334 Q270 350 284 334" fill="none" stroke="#0a4a3c" stroke-width="10" stroke-linecap="round"/>
+  <g stroke="#0a4a3c" stroke-width="9" stroke-linecap="round"><line x1="170" y1="314" x2="124" y2="304"/><line x1="170" y1="332" x2="126" y2="340"/><line x1="342" y1="314" x2="388" y2="304"/><line x1="342" y1="332" x2="386" y2="340"/></g>
+</svg>

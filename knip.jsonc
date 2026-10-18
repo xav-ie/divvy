@@ -1,0 +1,9 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": ["tests/worker.ts", "public/sw.js", "scripts/**/*.ts"],
+  // `cloudflare:workers` and `cloudflare:test` are runtime modules, not packages;
+  // changesets runs from the CLI only.
+  "ignoreDependencies": ["cloudflare", "@changesets/cli"],
+  // Exports used only inside their own module aren't checked yet.
+  "rules": { "exports": "off", "types": "off" },
+}

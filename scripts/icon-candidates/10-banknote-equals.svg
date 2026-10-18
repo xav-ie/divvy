@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- An equals sign made of two banknotes: even split (bold single glyph). -->
+  <rect width="512" height="512" fill="#0b7560"/>
+  <g fill="#fff"><rect x="96" y="150" width="320" height="92" rx="20"/><rect x="96" y="270" width="320" height="92" rx="20"/></g>
+  <g fill="#0b7560"><circle cx="256" cy="196" r="24"/><circle cx="256" cy="316" r="24"/></g>
+  <g fill="#5cd6a8"><circle cx="132" cy="196" r="10"/><circle cx="380" cy="196" r="10"/><circle cx="132" cy="316" r="10"/><circle cx="380" cy="316" r="10"/></g>
+</svg>

@@ -1,0 +1,12 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "worker-configuration.d.ts", "**/*"],
+  "exclude": ["dist", "result", "node_modules", "e2e-results", "e2e-report"],
+  "compilerOptions": {
+    "erasableSyntaxOnly": true,
+    "noUncheckedIndexedAccess": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "types": ["node", "@cloudflare/vitest-plugin/types"]
+  }
+}

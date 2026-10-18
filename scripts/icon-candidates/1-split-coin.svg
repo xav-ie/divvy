@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- A coin split into two unequal parts with a gap: sharing money. -->
+  <rect width="512" height="512" fill="#0b7560"/>
+  <clipPath id="l"><rect x="0" y="0" width="282" height="512"/></clipPath>
+  <clipPath id="r"><rect x="314" y="0" width="198" height="512"/></clipPath>
+  <g fill="#fff">
+    <circle cx="256" cy="256" r="168" clip-path="url(#l)"/>
+    <circle cx="272" cy="256" r="168" clip-path="url(#r)"/>
+  </g>
+</svg>

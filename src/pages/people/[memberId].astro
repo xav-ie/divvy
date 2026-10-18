@@ -1,0 +1,151 @@
+---
+import Avatar from "../../components/Avatar.tsx";
+import Chevron from "../../components/Chevron.astro";
+import { getMember } from "../../db/members.ts";
+import Layout from "../../layouts/Layout.astro";
+import RichText from "../../components/RichText.astro";
+import VenmoPay from "../../components/VenmoPay.tsx";
+import { venmoPlan } from "../../services/venmo.ts";
+import { hueFor } from "../../client/hue.ts";
+import { formatDate, todayLocal } from "../../client/format.ts";
+import { personDrillDown } from "../../services/balances.ts";
+import { ServiceError } from "../../services/errors.ts";
+import { getGroup } from "../../services/groups.ts";
+
+const { ctx } = Astro.locals;
+const groupParam = Astro.url.searchParams.get("groupId");
+const groupId = groupParam === null ? undefined : Number(groupParam);
+let drill;
+let group;
+try {
+  drill = personDrillDown(ctx, Number(Astro.params.memberId), groupId);
+  group = groupId === undefined ? undefined : getGroup(ctx, groupId);
+} catch (err) {
+  if (err instanceof ServiceError) return Astro.rewrite("/404");
+  throw err;
+}
+const me = ctx.user.memberId;
+// Positive cents: they owe me, so they pay me.
+const [from, to] =
+  drill.cents > 0 ? [drill.memberId, me] : [me, drill.memberId];
+/** "Oct 1", or "dated Oct 1, added Oct 12" when it was entered on a later day. */
+function when(date: string, createdAt: string | null): string {
+  const added = createdAt && todayLocal(new Date(createdAt));
+  return added && added !== date
+    ? `dated ${formatDate(date)}, added ${formatDate(added)}`
+    : formatDate(date);
+}
+// One Venmo link per group where you owe them; never netted across groups.
+const pays = venmoPlan(ctx, drill.memberId, group?.id)?.pays ?? [];
+const kindLabel = {
+  expense: "Bill",
+  payment: "Payment",
+  simplify: "Simplified",
+} as const;
+const settle = `/settle?from=${from}&to=${to}&cents=${Math.abs(drill.cents)}${group ? `&groupId=${group.id}` : ""}`;
+const people = [{ id: drill.memberId, name: drill.name }];
+const viewer = { id: me };
+---
+
+<Layout
+  title={drill.name}
+  crumbs={
+    group
+      ? [
+          { href: "/groups", label: "Groups" },
+          {
+            href: `/groups/${group.id}?tab=balances`,
+            label: `${group.emoji} ${group.name}`.trim(),
+          },
+        ]
+      : [{ href: "/", label: "Home" }]
+  }
+>
+  <div
+    class="person-hero flex items-center gap-3 rounded-2xl p-4"
+    style={`--hue:${hueFor(drill.memberId)}`}
+  >
+    <Avatar
+      name={drill.name}
+      id={drill.memberId}
+      placeholder={getMember(ctx.db, drill.memberId)?.placeholder ?? false}
+      size="lg"
+    />
+    <div class="min-w-0">
+      <p class="display" data-testid="headline">
+        <RichText text={drill.sentence} people={people} viewer={viewer} />
+      </p>
+      <p class="mt-1 text-sm text-muted">
+        {group ? `In ${group.name}` : "Across all your groups"}
+      </p>
+    </div>
+  </div>
+  {drill.cents !== 0 && (
+    <a href={settle} class="btn btn-primary mt-4 w-full md:w-auto">
+      Settle up
+    </a>
+  )}
+  {pays.length > 0 && (
+    <ul class="mt-3 space-y-3 md:max-w-sm" aria-label="Pay on Venmo">
+      {pays.map((pay) => (
+        <li>
+          {pays.length > 1 && (
+            <p class="mb-1 text-sm text-muted">In {pay.groupName}</p>
+          )}
+          <VenmoPay client:load {...pay} />
+        </li>
+      ))}
+    </ul>
+  )}
+
+  <h2 class="mt-6 mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
+    How it adds up, newest first
+  </h2>
+  {drill.lines.length === 0 ? (
+    <p class="card p-4 text-muted">No bills or payments between you yet.</p>
+  ) : (
+    <ol
+      class="card divide-y divide-line overflow-hidden"
+      aria-label="Bills and payments"
+    >
+      {drill.lines.map((l) => {
+        const body = (
+          <span class="min-w-0 flex-1">
+            <span class="block text-sm text-muted" data-testid="when">
+              {l.kind === "simplify"
+                ? "Simplify is on in this group"
+                : when(l.date, l.createdAt)}{" "}
+              · {kindLabel[l.kind]}
+            </span>
+            <span class="block">
+              <RichText text={l.sentence} people={people} viewer={viewer} />
+            </span>
+            <span class="mt-1 block text-sm font-medium" data-testid="running">
+              {l.runningCents === 0 ? (
+                "Settled up after this"
+              ) : (
+                <RichText
+                  text={`Running total: ${l.runningSentence}`}
+                  people={people}
+                  viewer={viewer}
+                />
+              )}
+            </span>
+          </span>
+        );
+        return (
+          <li>
+            {l.kind === "expense" ? (
+              <a href={`/expenses/${l.id}`} class="row-link">
+                {body}
+                <Chevron />
+              </a>
+            ) : (
+              <div class="flex gap-3 px-4 py-3">{body}</div>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  )}
+</Layout>

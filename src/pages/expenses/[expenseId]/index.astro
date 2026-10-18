@@ -1,0 +1,271 @@
+---
+import DeleteAction from "../../../components/DeleteAction.tsx";
+import ExpenseAttachments from "../../../components/ExpenseAttachments.tsx";
+import { listAttachments } from "../../../services/attachments.ts";
+import Layout from "../../../layouts/Layout.astro";
+import { formatDate } from "../../../client/format.ts";
+import { expenseDebts } from "../../../domain/balances.ts";
+import { formatCents } from "../../../domain/money.ts";
+import { lineCents } from "../../../domain/split.ts";
+import type { ExpenseItem } from "../../../domain/types.ts";
+import { debtSentence } from "../../../domain/words.ts";
+import RichText from "../../../components/RichText.astro";
+import { ServiceError } from "../../../services/errors.ts";
+import { getExpense } from "../../../services/expenses.ts";
+import { getGroup } from "../../../services/groups.ts";
+
+const { ctx } = Astro.locals;
+let expense;
+let group;
+try {
+  expense = getExpense(ctx, Number(Astro.params.expenseId));
+  group = getGroup(ctx, expense.groupId);
+} catch (err) {
+  if (err instanceof ServiceError) return Astro.rewrite("/404");
+  throw err;
+}
+const me = ctx.user.memberId;
+const names = new Map(group.members.map((m) => [m.id, m.name]));
+const people = group.members.map((m) => ({ id: m.id, name: m.name }));
+const viewer = { id: me };
+const nameOf = (id: number) =>
+  id === me ? "You" : (names.get(id) ?? "A former member");
+const possessive = (id: number) =>
+  id === me ? "Your" : `${names.get(id) ?? "A former member"}'s`;
+const ids = (a: Record<number, number>) => Object.keys(a).map(Number);
+
+function splitText(item: ExpenseItem): string {
+  const parts = ids(item.split).filter((id) => (item.split[id] ?? 0) > 0);
+  switch (item.splitType) {
+    case "equal":
+      if (parts.length === 1)
+        return `Only ${parts[0] === me ? "you" : nameOf(parts[0]!)}`;
+      return `Split equally: ${parts.map(nameOf).join(", ")}`;
+    case "percent":
+      return parts.map((id) => `${nameOf(id)} ${item.split[id]}%`).join(", ");
+    case "exact":
+      return parts
+        .map((id) => `${nameOf(id)} ${formatCents(item.split[id]!)}`)
+        .join(", ");
+    case "shares":
+      return parts
+        .map(
+          (id) =>
+            `${nameOf(id)} ${item.split[id]} ${item.split[id] === 1 ? "share" : "shares"}`,
+        )
+        .join(", ");
+  }
+}
+
+const yourDebts = expenseDebts(expense.payers, expense.shares).filter(
+  (d) => d.from === me || d.to === me,
+);
+const itemized =
+  expense.items.length > 1 ||
+  expense.taxCents > 0 ||
+  expense.tipCents > 0 ||
+  expense.discountCents > 0 ||
+  expense.items.some((i) => i.quantity !== 1);
+const receiptId = expense.receiptId;
+const attachments = listAttachments(ctx, expense.id).map(
+  ({ path: _path, sha256: _sha, ...a }) => a,
+);
+// Deleting offers Undo, which restores the same expense (id, creator, recurring link).
+const undo = {
+  url: `/api/expenses/${expense.id}/restore`,
+  done: `Restored ${expense.title}`,
+};
+const pct = (mode: string, value: number) =>
+  mode === "percent" ? ` (${value}%)` : "";
+const extras = [
+  [`Tax${pct(expense.taxMode, expense.taxValue)}`, expense.taxCents],
+  [`Tip${pct(expense.tipMode, expense.tipValue)}`, expense.tipCents],
+  [
+    `Discount${pct(expense.discountMode, expense.discountValue)}`,
+    -expense.discountCents,
+  ],
+] as const;
+---
+
+<Layout
+  title={expense.title}
+  crumbs={[
+    { href: "/groups", label: "Groups" },
+    {
+      href: `/groups/${group.id}`,
+      label: `${group.emoji} ${group.name}`.trim(),
+    },
+  ]}
+>
+  <p class="font-display text-3xl font-extrabold">
+    {formatCents(expense.totalCents)}
+  </p>
+  <p class="mt-1 text-muted">
+    {formatDate(expense.date)} · {group.name}
+  </p>
+
+  <section class="mt-4" aria-label="What it means for you">
+    {yourDebts.length > 0 ? (
+      <ul class="space-y-1">
+        {yourDebts.map((d) => (
+          <li class="text-lg font-medium">
+            <RichText
+              text={debtSentence(names, me, d)}
+              people={people}
+              viewer={viewer}
+            />
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="text-lg">
+        <RichText
+          text={
+            expense.shares[me] || expense.payers[me]
+              ? "This one doesn't change what you owe anyone."
+              : "You're not part of this one."
+          }
+          people={people}
+          viewer={viewer}
+        />
+      </p>
+    )}
+  </section>
+
+  <div class="mt-6 grid gap-4 md:grid-cols-2">
+    <section aria-labelledby="paid-h">
+      <h2
+        id="paid-h"
+        class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted"
+      >
+        Who paid
+      </h2>
+      <ul class="card divide-y divide-line">
+        {ids(expense.payers).map((id) => (
+          <li class="px-4 py-3">
+            <RichText
+              text={`${nameOf(id)} paid ${formatCents(expense.payers[id]!)}`}
+              people={people}
+              viewer={viewer}
+            />
+          </li>
+        ))}
+      </ul>
+    </section>
+    <section aria-labelledby="shares-h">
+      <h2
+        id="shares-h"
+        class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted"
+      >
+        Shares
+      </h2>
+      <ul class="card divide-y divide-line" aria-label="Shares">
+        {ids(expense.shares).map((id) => (
+          <li class="px-4 py-3">
+            <RichText
+              text={`${possessive(id)} share ${formatCents(expense.shares[id]!)}`}
+              people={people}
+              viewer={viewer}
+            />
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+
+  <section class="mt-6" aria-labelledby="items-h">
+    <h2
+      id="items-h"
+      class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted"
+    >
+      {itemized ? "Items" : "Split"}
+    </h2>
+    <ul class="card divide-y divide-line">
+      {expense.items.map((item) => (
+        <li class="px-4 py-3">
+          {itemized && (
+            <p class="flex justify-between gap-2">
+              <span class="min-w-0 break-words">
+                {item.name || "Item"}
+                {item.quantity !== 1 && (
+                  <span class="text-muted">
+                    {" "}
+                    × {item.quantity} at {formatCents(item.unitCents)}
+                  </span>
+                )}
+              </span>
+              <span class="shrink-0">{formatCents(lineCents(item))}</span>
+            </p>
+          )}
+          <p class="text-sm text-muted">
+            <RichText text={splitText(item)} people={people} viewer={viewer} />
+          </p>
+        </li>
+      ))}
+      {extras
+        .filter(([, c]) => c !== 0)
+        .map(([label, c]) => (
+          <li class="flex justify-between px-4 py-3">
+            <span>{label}</span>
+            <span>{c < 0 ? `minus ${formatCents(c)}` : formatCents(c)}</span>
+          </li>
+        ))}
+    </ul>
+  </section>
+
+  {expense.notes && (
+    <p class="card mt-6 p-4 whitespace-pre-wrap">{expense.notes}</p>
+  )}
+
+  {receiptId && (
+    <section class="mt-6" aria-labelledby="receipt-h">
+      <h2
+        id="receipt-h"
+        class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted"
+      >
+        Receipt
+      </h2>
+      <a
+        href={`/api/receipts/${receiptId}`}
+        target="_blank"
+        rel="noopener"
+        data-astro-prefetch="false"
+      >
+        <img
+          src={`/api/receipts/${receiptId}`}
+          alt={`Receipt for ${expense.title}`}
+          class="card max-h-[70dvh] w-full object-contain"
+          loading="lazy"
+        />
+      </a>
+    </section>
+  )}
+
+  <ExpenseAttachments
+    client:load
+    expenseId={expense.id}
+    canEdit={expense.canEdit}
+    attachments={attachments}
+  />
+
+  {expense.canEdit ? (
+    <div class="mt-8 grid gap-3 md:grid-cols-2">
+      <a href={`/expenses/${expense.id}/edit`} class="btn btn-primary">
+        Edit expense
+      </a>
+      <DeleteAction
+        client:only="react"
+        url={`/api/expenses/${expense.id}`}
+        redirect={`/groups/${group.id}`}
+        label="Delete expense"
+        question={`Delete "${expense.title}" (${formatCents(expense.totalCents)})? Balances update right away.`}
+        done={`Deleted ${expense.title}`}
+        undo={undo}
+      />
+    </div>
+  ) : (
+    <p class="mt-8 text-sm text-muted">
+      Only the person who added or paid this can change it.
+    </p>
+  )}
+</Layout>

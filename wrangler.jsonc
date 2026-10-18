@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "divvy",
+  "main": "./src/worker.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "durable_objects": {
+    "bindings": [{ "name": "DIVVY", "class_name": "Divvy" }],
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Divvy"] }],
+  "r2_buckets": [{ "binding": "FILES", "bucket_name": "divvy-files" }],
+  "ai": { "binding": "AI" },
+  // Bills recurring templates whose day has come (UTC).
+  "triggers": { "crons": ["0 12 * * *"] },
+}

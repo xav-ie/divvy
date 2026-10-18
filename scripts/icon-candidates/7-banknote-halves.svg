@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Two hands each holding half of a banknote (flat two-tone). -->
+  <rect width="512" height="512" fill="#0b7560"/>
+  <g transform="rotate(-6 150 256)">
+    <path d="M70 176 H238 L222 206 L242 236 L222 266 L242 296 L222 326 L238 336 H70 Z" fill="#5cd6a8"/>
+    <circle cx="190" cy="256" r="34" fill="none" stroke="#0b7560" stroke-width="12"/>
+  </g>
+  <g transform="rotate(6 362 256)">
+    <path d="M442 176 H262 L246 206 L266 236 L246 266 L266 296 L246 326 L262 336 H442 Z" fill="#fff"/>
+    <circle cx="322" cy="256" r="34" fill="none" stroke="#0b7560" stroke-width="12"/>
+  </g>
+  <g fill="#fff4dc" stroke="#08503f" stroke-width="10"><rect x="40" y="226" width="70" height="104" rx="35"/><rect x="402" y="226" width="70" height="104" rx="35"/></g>
+</svg>

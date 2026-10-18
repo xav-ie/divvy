@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- A wise coin owl with big eyes and a gold beak. -->
+  <defs><radialGradient id="bg" cx="28%" cy="18%" r="95%"><stop offset="0" stop-color="#14a37f"/><stop offset="1" stop-color="#095f4c"/></radialGradient></defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g fill="#fff4dc" stroke="#fff4dc" stroke-width="22" stroke-linejoin="round"><path d="M150 178 L142 98 L214 150 Z"/><path d="M362 178 L370 98 L298 150 Z"/></g>
+  <circle cx="256" cy="290" r="152" fill="#fff4dc"/>
+  <circle cx="256" cy="290" r="132" fill="none" stroke="#efdcb0" stroke-width="10"/>
+  <g fill="#fff" stroke="#0a4a3c" stroke-width="12"><circle cx="198" cy="264" r="50"/><circle cx="314" cy="264" r="50"/></g>
+  <g fill="#0a4a3c"><circle cx="204" cy="268" r="22"/><circle cx="308" cy="268" r="22"/></g>
+  <g fill="#fff"><circle cx="212" cy="258" r="7"/><circle cx="316" cy="258" r="7"/></g>
+  <path d="M240 314 L272 314 L256 342 Z" fill="#f5b942" stroke="#f5b942" stroke-width="10" stroke-linejoin="round"/>
+  <g fill="none" stroke="#5cd6a8" stroke-width="10" stroke-linecap="round"><path d="M206 382 q12 14 24 0"/><path d="M244 392 q12 14 24 0"/><path d="M282 382 q12 14 24 0"/></g>
+</svg>

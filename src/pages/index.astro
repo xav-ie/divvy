@@ -1,0 +1,120 @@
+---
+import ActivityList from "../components/ActivityList.astro";
+import Chevron from "../components/Chevron.astro";
+import Piggy from "../components/Piggy.astro";
+import RichText from "../components/RichText.astro";
+import Avatar from "../components/Avatar.tsx";
+import VenmoPay from "../components/VenmoPay.tsx";
+import Layout from "../layouts/Layout.astro";
+import { getMembers } from "../db/members.ts";
+import { listActivity } from "../services/activity.ts";
+import { homeSummary } from "../services/balances.ts";
+import { listGroups } from "../services/groups.ts";
+import { singleGroupPay, venmoPlan } from "../services/venmo.ts";
+
+const { ctx } = Astro.locals;
+const me = ctx.user.memberId;
+const summary = homeSummary(ctx);
+const groups = listGroups(ctx);
+const activity = listActivity(ctx, { limit: 10 });
+const people = summary.people.map((p) => ({ id: p.memberId, name: p.name }));
+const placeholders = new Set(
+  getMembers(
+    ctx.db,
+    summary.people.map((p) => p.memberId),
+  )
+    .filter((m) => m.placeholder)
+    .map((m) => m.id),
+);
+// Where you owe someone with a Venmo username: one pay link when it all sits in
+// one group, else a pointer to pay group by group (never netted across groups).
+const plans = new Map(
+  summary.people
+    .filter((p) => p.cents < 0)
+    .map((p) => [p.memberId, venmoPlan(ctx, p.memberId)]),
+);
+const groupNames = new Map(
+  groups.map((g) => [g.id, `${g.emoji} ${g.name}`.trim()]),
+);
+---
+
+<Layout title="Home">
+  <p class="display" data-testid="overall">
+    {summary.sentence}
+  </p>
+
+  {groups.length === 0 ? (
+    <div class="card mt-6 p-4">
+      <Piggy class="mx-auto h-16 w-16" />
+      <p class="mt-3 text-center">
+        Start by creating a group for your household.
+      </p>
+      <a href="/groups" class="btn btn-primary mt-3 w-full">
+        Create a group
+      </a>
+    </div>
+  ) : summary.people.length > 0 ? (
+    <section class="mt-6" aria-labelledby="people-h">
+      <h2
+        id="people-h"
+        class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted"
+      >
+        Balances
+      </h2>
+      <ul class="card divide-y divide-line overflow-hidden">
+        {summary.people.map((p) => (
+          <li>
+            <a href={`/people/${p.memberId}`} class="row-link">
+              <Avatar
+                name={p.name}
+                id={p.memberId}
+                placeholder={placeholders.has(p.memberId)}
+              />
+              <span class="flex-1">
+                <RichText
+                  text={p.sentence}
+                  people={people}
+                  viewer={{ id: me }}
+                />
+              </span>
+              <Chevron />
+            </a>
+            {plans.get(p.memberId) &&
+              (singleGroupPay(plans.get(p.memberId)!) ? (
+                <div class="px-4 pb-3">
+                  <VenmoPay
+                    client:load
+                    {...singleGroupPay(plans.get(p.memberId)!)!}
+                  />
+                </div>
+              ) : plans.get(p.memberId)!.pays.length > 0 ? (
+                <div class="px-4 pb-3">
+                  <a
+                    href={`/people/${p.memberId}`}
+                    class="btn btn-secondary w-full"
+                  >
+                    Pay per group on Venmo
+                  </a>
+                </div>
+              ) : null)}
+          </li>
+        ))}
+      </ul>
+    </section>
+  ) : null}
+
+  <section class="mt-8" aria-labelledby="activity-h">
+    <h2
+      id="activity-h"
+      class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted"
+    >
+      Recent activity
+    </h2>
+    <ActivityList
+      items={activity}
+      groups={groupNames}
+      people={people}
+      viewerId={me}
+    />
+  </section>
+</Layout>

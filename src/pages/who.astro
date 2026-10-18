@@ -1,0 +1,21 @@
+---
+import WhoPicker from "../components/WhoPicker.tsx";
+import Skeleton from "../components/Skeleton.astro";
+import Layout from "../layouts/Layout.astro";
+import { getDb } from "../db/connection.ts";
+import { listUsers } from "../db/users.ts";
+
+// Only picker mode signs people in here.
+if (Astro.locals.auth.mode !== "picker") return Astro.redirect("/");
+const people = listUsers(getDb()).map((u) => ({ id: u.id, name: u.name }));
+---
+
+<Layout title="Who are you?" form>
+  <WhoPicker client:only="react" people={people}>
+    <Skeleton slot="fallback" rows={4} />
+  </WhoPicker>
+  <p class="mt-6 text-sm text-muted" data-testid="picker-note">
+    Anyone on this network can pick any name. Proper sign-in comes with
+    Cloudflare Access.
+  </p>
+</Layout>
