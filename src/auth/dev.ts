@@ -1,5 +1,5 @@
 /** Header that picks the acting dev user in multi-user tests. */
-export const DEV_USER_HEADER = "x-divvy-dev-user";
+const DEV_USER_HEADER = "x-divvy-dev-user";
 
 /**
  * Dev/e2e identity: the `x-divvy-dev-user` header if it names one of the

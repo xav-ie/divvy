@@ -8,8 +8,6 @@ import { getExpense, mayEdit, requireExpense } from "./expenses.ts";
 import { parse } from "./parse.ts";
 import { id } from "./schemas.ts";
 
-export type { Attachment } from "../db/attachments.ts";
-
 export const MAX_ATTACHMENT_BYTES = 20 * 1024 * 1024;
 
 const HEIC_BRANDS = new Set([

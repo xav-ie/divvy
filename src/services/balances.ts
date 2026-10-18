@@ -85,7 +85,7 @@ function namesFor(
 }
 
 /** A balance between the viewer and one person: positive `cents` means they owe the viewer. */
-export interface PersonBalance {
+interface PersonBalance {
   memberId: MemberId;
   name: string;
   cents: Cents;
@@ -199,7 +199,7 @@ function youFirst(a: BalanceRow, b: BalanceRow): number {
   return Number(b.involvesYou) - Number(a.involvesYou) || b.cents - a.cents;
 }
 
-export interface DrillDownLine {
+interface DrillDownLine {
   /** "simplify": the adjustment a group with simplify on makes to this balance. */
   kind: LedgerEntry["kind"] | "simplify";
   /** Expense or payment id (the group id for "simplify"). */

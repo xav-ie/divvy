@@ -190,7 +190,7 @@ function toInput(ctx: Ctx, groupId: number, a: AddArgs): ExpenseInput {
 }
 
 /** An expense with names instead of member ids. */
-export function expenseOut(ctx: Ctx, e: ExpenseSummaryView) {
+function expenseOut(ctx: Ctx, e: ExpenseSummaryView) {
   const p = groupPeople(ctx, e.groupId);
   return {
     id: e.id,

@@ -12,7 +12,7 @@ import { notFound, ServiceError } from "./errors.ts";
 import { parse } from "./parse.ts";
 import { id } from "./schemas.ts";
 
-export const MAX_RECEIPT_BYTES = 10 * 1024 * 1024;
+const MAX_RECEIPT_BYTES = 10 * 1024 * 1024;
 
 const TYPES = {
   "image/jpeg": "jpg",
@@ -22,7 +22,7 @@ const TYPES = {
 } as const;
 
 /** The image type from its magic bytes (what the vision model accepts), or undefined. */
-export function sniffImage(b: Uint8Array): keyof typeof TYPES | undefined {
+function sniffImage(b: Uint8Array): keyof typeof TYPES | undefined {
   const ascii = (from: number, to: number) =>
     String.fromCharCode(...b.subarray(from, to));
   if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "image/jpeg";

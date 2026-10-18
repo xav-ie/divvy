@@ -14,8 +14,6 @@ import { monthName } from "./recurring.ts";
 import { parse } from "./parse.ts";
 import { ExpenseInput, id } from "./schemas.ts";
 
-export type { Expense, ExpenseSummary } from "../db/expenses.ts";
-
 export interface ExpenseView extends repo.Expense {
   /** The acting user created it, so may edit or delete it. */
   canEdit: boolean;
@@ -158,7 +156,7 @@ export function requireExpense(ctx: Ctx, expenseId: number): repo.Expense {
   return e;
 }
 
-export function requireOwnExpense(
+function requireOwnExpense(
   ctx: Ctx,
   expenseId: number,
   action: string,

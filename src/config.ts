@@ -8,7 +8,7 @@ export type AuthConfig =
   | { mode: "picker"; secret: string };
 
 /** Bytes of `DIVVY_SESSION_SECRET` picker mode needs at least. */
-export const SESSION_SECRET_MIN = 32;
+const SESSION_SECRET_MIN = 32;
 
 /**
  * `DIVVY_AUTH_MODE=picker`: people pick who they are on /who, remembered in

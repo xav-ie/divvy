@@ -38,7 +38,7 @@ export interface Debt {
 
 /** How tax, tip or discount was entered: cents, or a percent of the item subtotal. */
 export const AMOUNT_MODES = ["amount", "percent"] as const;
-export type AmountMode = (typeof AMOUNT_MODES)[number];
+type AmountMode = (typeof AMOUNT_MODES)[number];
 
 export interface Adjustments {
   taxMode: AmountMode;

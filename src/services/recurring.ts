@@ -24,8 +24,6 @@ import { listExpenses } from "../db/expenses.ts";
 import { parse } from "./parse.ts";
 import { id } from "./schemas.ts";
 
-export type { Recurring } from "../db/recurring.ts";
-
 export const RecurringInput = z.object({
   title: z.string().trim().max(200).min(1, "Give the bill a title"),
   dayOfMonth: z
@@ -152,7 +150,7 @@ export function listRecurring(
   return repo.listRecurring(ctx.db, group.id).map((t) => view(ctx, t, today));
 }
 
-export function getRecurring(
+function getRecurring(
   ctx: Ctx,
   recurringId: number,
   today = todayLocal(),

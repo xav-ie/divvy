@@ -21,7 +21,7 @@ import { parse } from "./parse.ts";
 import { id } from "./schemas.ts";
 
 /** How long a link code works. */
-export const LINK_MINUTES = 15;
+const LINK_MINUTES = 15;
 
 const NOT_HERE =
   "Adding sign-in emails is available with Cloudflare sign-in, which verifies each email";
@@ -93,14 +93,14 @@ export function peekLink(
   return { ownerName: getUser(db, liveLink(db, code, now).userId)!.name };
 }
 
-export type LinkOutcome = "linked" | "merged" | "already";
+type LinkOutcome = "linked" | "merged" | "already";
 
 /**
  * Attach `email` to user `userId`. If it already belongs to another account,
  * that account is merged away only when completely empty (just signed in,
  * nothing else); otherwise a 409 says why. Run inside a transaction.
  */
-export function linkEmailToUser(
+function linkEmailToUser(
   db: Db,
   userId: number,
   rawEmail: string,

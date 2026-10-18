@@ -2,7 +2,7 @@ import { closeSync, mkdirSync, openSync } from "node:fs";
 import { join } from "node:path";
 
 /** Roommates each test can act as; every test gets its own copy (a slot) so balances never mix. */
-export const NAMES = ["Ana", "Ben", "Cy", "Dee"] as const;
+const NAMES = ["Ana", "Ben", "Cy", "Dee"] as const;
 export type Name = (typeof NAMES)[number];
 
 const SLOTS = 300;

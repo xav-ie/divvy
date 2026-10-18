@@ -6,7 +6,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * keeps honest roommates apart until Cloudflare Access is in front.
  */
 
-export const PICKER_COOKIE = "divvy_who";
+const PICKER_COOKIE = "divvy_who";
 const YEAR = 365 * 24 * 60 * 60;
 
 const mac = (userId: number, secret: string) =>
