@@ -1,0 +1,26 @@
+diff --git a/node_modules/astro/components/ClientRouter.astro b/node_modules/astro/components/ClientRouter.astro
+index 5768558..edb1f9d 100644
+--- a/node_modules/astro/components/ClientRouter.astro
++++ b/node_modules/astro/components/ClientRouter.astro
+@@ -65,7 +65,7 @@ const { fallback = 'animate' } = Astro.props;
+ 			lastClickedElementLeavingWindow = leavesWindow(ev) ? link : null;
+ 
+ 			if (ev.composed) {
+-				link = ev.composedPath()[0];
++				link = ev.composedPath()[0]!;
+ 			}
+ 			if (link instanceof Element) {
+ 				link = link.closest('a, area');
+diff --git a/node_modules/astro/components/Debug.astro b/node_modules/astro/components/Debug.astro
+index 5154999..593d0e4 100644
+--- a/node_modules/astro/components/Debug.astro
++++ b/node_modules/astro/components/Debug.astro
+@@ -1,7 +1,7 @@
+ ---
+ import Code from './Code.astro';
+ 
+-const key = Object.keys(Astro.props)[0];
++const key = Object.keys(Astro.props)[0]!;
+ const value = Astro.props[key];
+ ---
+ 

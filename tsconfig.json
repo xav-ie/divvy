@@ -8,5 +8,9 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "types": ["node", "@cloudflare/vitest-plugin/types"]
-  }
+  },
+  // Type-checks .astro files with tsc (needs --runExternalCode).
+  "contentMappers": [
+    { "package": "@astrojs/ts-content-mapper", "extensions": [".astro"] }
+  ]
 }
