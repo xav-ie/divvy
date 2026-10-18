@@ -1,5 +1,12 @@
 # divvy
 
+## 0.1.1
+
+### Patch Changes
+
+- 01854c8: On Android, the installed app no longer forces its green theme color onto the
+  system navigation bar; the bar follows the phone's light or dark theme.
+
 ## 0.1.0
 
 ### Minor Changes
