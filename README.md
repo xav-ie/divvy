@@ -57,7 +57,7 @@ Receipt scanning uses Workers AI, which only runs remotely; it needs
 ## Test and deploy
 
 ```sh
-npm run check    # types (astro check + tsc), prettier, knip
+npm run check    # types (tsc, .astro included), prettier, knip
 npm test         # vitest inside workerd (domain, services, auth, API, MCP)
 npm run e2e      # playwright, phone + desktop, against wrangler dev
 npm run build && npm run deploy

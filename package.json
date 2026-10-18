@@ -13,7 +13,7 @@
     "preview": "astro build && wrangler dev --local",
     "types": "wrangler types",
     "check": "npm run check:types && npm run check:format && npm run check:knip",
-    "check:types": "astro check && tsc --noEmit",
+    "check:types": "patch-package && astro sync && tsc --noEmit --runExternalCode",
     "check:format": "prettier --check .",
     "check:knip": "knip",
     "format": "prettier --write .",
@@ -35,7 +35,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
+    "@astrojs/ts-content-mapper": "0.2.0",
     "@changesets/cli": "^3.0.3",
     "@cloudflare/vitest-plugin": "^1.4.4",
     "@playwright/test": "1.63.0",
@@ -45,10 +45,11 @@
     "@types/react-dom": "^19.3.0",
     "fast-check": "^4.10.2",
     "knip": "^6.42.0",
+    "patch-package": "^8.0.1",
     "prettier": "^3.9.10",
     "prettier-plugin-astro": "^1.1.1",
     "tailwindcss": "^4.3.3",
-    "typescript": "^6.0.3",
+    "typescript": "7.1.0-dev.20261018.1",
     "vitest": "^5.0.4",
     "wrangler": "^4.151.1"
   }
