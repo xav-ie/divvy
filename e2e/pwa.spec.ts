@@ -120,3 +120,138 @@ test("pages and client-side navigation still work with the service worker active
   );
   expect([before, after]).toEqual(["Ana", "Ana Lopez"]);
 });
+
+/** Stand in for Chrome's install prompt, which headless browsers never fire. */
+const fakeInstallPrompt = () => {
+  const e = new Event("beforeinstallprompt") as Event & {
+    prompt(): Promise<void>;
+    userChoice: Promise<{ outcome: string }>;
+  };
+  e.prompt = async () => {
+    (window as { prompted?: boolean }).prompted = true;
+  };
+  e.userChoice = Promise.resolve({ outcome: "accepted" });
+  dispatchEvent(e);
+};
+
+test("Home offers to install when the browser can, and remembers Not now", async ({
+  as,
+}) => {
+  const ana = await as("Ana");
+  const page = await ana.page();
+  await page.goto("/");
+  const banner = page.getByTestId("install-banner");
+  await expect(banner).toHaveCount(0);
+
+  await page.evaluate(fakeInstallPrompt);
+  await expect(banner).toContainText("Install divvy");
+  await banner.getByRole("button", { name: "Install" }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(() => (window as { prompted?: boolean }).prompted),
+    )
+    .toBe(true);
+  await expect(banner).toHaveCount(0);
+
+  await page.evaluate(fakeInstallPrompt);
+  await banner.getByRole("button", { name: "Not now" }).click();
+  await expect(banner).toHaveCount(0);
+  await page.reload();
+  await page.evaluate(fakeInstallPrompt);
+  await expect(banner).toHaveCount(0);
+
+  // Profile still has the button.
+  await page.goto("/profile");
+  await page.evaluate(fakeInstallPrompt);
+  await page.getByRole("button", { name: "Install", exact: true }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(() => (window as { prompted?: boolean }).prompted),
+    )
+    .toBe(true);
+});
+
+test("Profile turns notifications on for this device and picks which ones", async ({
+  as,
+}) => {
+  const ana = await as("Ana");
+  const page = await ana.page();
+  // Headless Chromium denies notifications and has no push service; pretend both work.
+  await page.addInitScript(() => {
+    let permission: NotificationPermission = "default";
+    Object.defineProperty(Notification, "permission", {
+      get: () => permission,
+    });
+    Notification.requestPermission = async () => (permission = "granted");
+    // Kept across reloads, like a real subscription.
+    const KEY = "fake-push";
+    const json = {
+      endpoint: "https://push.example.com/ana",
+      keys: {
+        p256dh:
+          "BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQtUbVlUls0VJXg7A8u-Ts1XbjhazAkj7I99e8QcYP7DkM",
+        auth: "tBHItJI5svbpez7KI4CCXg",
+      },
+    };
+    const sub = {
+      endpoint: json.endpoint,
+      toJSON: () => json,
+      unsubscribe: async () => {
+        sessionStorage.removeItem(KEY);
+        return true;
+      },
+    } as unknown as PushSubscription;
+    PushManager.prototype.getSubscription = async () =>
+      sessionStorage.getItem(KEY) ? sub : null;
+    PushManager.prototype.subscribe = async () => {
+      sessionStorage.setItem(KEY, "1");
+      return sub;
+    };
+  });
+  await page.goto("/profile");
+
+  const device = page.getByRole("switch", {
+    name: /Notifications on this device/,
+  });
+  await expect(device).toBeEnabled();
+  await expect(device).not.toBeChecked();
+  const saved = page.waitForRequest(
+    (r) => r.url().endsWith("/api/push/subscriptions") && r.method() === "POST",
+  );
+  // It flips once the device is subscribed.
+  await device.click();
+  await expect(device).toBeChecked();
+  expect((await saved).postDataJSON()).toMatchObject({
+    endpoint: "https://push.example.com/ana",
+  });
+  await expect(page.getByRole("status")).toContainText(
+    "Notifications are on for this device",
+  );
+
+  const payments = page.getByRole("switch", { name: /Payments/ });
+  await expect(payments).toBeChecked();
+  await payments.uncheck();
+  await expect
+    .poll(async () => (await (await ana.api.get("/api/push")).json()).payments)
+    .toBe(false);
+  await page.reload();
+  await expect(
+    page.getByRole("switch", { name: /Payments/ }),
+  ).not.toBeChecked();
+  await expect(
+    page.getByRole("switch", { name: /New expenses/ }),
+  ).toBeChecked();
+
+  const removed = page.waitForRequest(
+    (r) =>
+      r.url().includes("/api/push/subscriptions?endpoint=") &&
+      r.method() === "DELETE",
+  );
+  const again = page.getByRole("switch", {
+    name: /Notifications on this device/,
+  });
+  await expect(again).toBeChecked();
+  await again.click();
+  await removed;
+  await expect(again).not.toBeChecked();
+});

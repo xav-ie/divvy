@@ -1,4 +1,5 @@
 ---
+import AppSettings from "../components/AppSettings.tsx";
 import AssistantAccess from "../components/AssistantAccess.tsx";
 import SignInEmails from "../components/SignInEmails.tsx";
 import VenmoUsername from "../components/VenmoUsername.tsx";
@@ -7,10 +8,12 @@ import Skeleton from "../components/Skeleton.astro";
 import SwitchPerson from "../components/SwitchPerson.tsx";
 import Layout from "../layouts/Layout.astro";
 import { listEmails } from "../services/emails.ts";
+import { getPushSettings } from "../services/notifications.ts";
 import { listTokens } from "../services/tokens.ts";
 
 const { user } = Astro.locals.ctx;
 const picker = Astro.locals.auth.mode === "picker";
+const { expenses, payments } = await getPushSettings(Astro.locals.ctx);
 ---
 
 <Layout title="Profile">
@@ -32,6 +35,9 @@ const picker = Astro.locals.auth.mode === "picker";
   >
     <Skeleton slot="fallback" rows={2} />
   </SignInEmails>
+  <AppSettings client:only="react" initial={{ expenses, payments }}>
+    <Skeleton slot="fallback" rows={3} />
+  </AppSettings>
   <AssistantAccess client:only="react" initial={listTokens(Astro.locals.ctx)}>
     <Skeleton slot="fallback" rows={3} />
   </AssistantAccess>
