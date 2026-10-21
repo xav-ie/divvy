@@ -66,6 +66,7 @@ src/
   components/    Astro + React components
   mcp/           server.ts and one module per tool family
   receipts/      scan.ts (Workers AI vision model, JSON schema), prompt.ts
+  push/          webpush.ts (Web Push encryption and VAPID signing)
 migrations/
 tests/           vitest (in workerd)
 e2e/             playwright
@@ -130,7 +131,10 @@ flake.nix        devShells.default
 
 - **Home**: one sentence summary ("Overall, you're owed $120.40"), then a list
   of people with a nonzero balance across all groups, each a sentence
-  ("Ana owes you $42.10") with a chevron into the drill-down. Recent activity.
+  ("Ana owes you $42.10") with a chevron into the drill-down. Recent activity. In
+  a browser tab that can install divvy, a dismissible "Install divvy" card
+  (iPhone/iPad: Share > Add to Home Screen steps); in the installed app, a
+  dismissible offer to turn on notifications. Each dismissal is per device.
 - **Groups**: list; group page with tabs Expenses / Balances / Members /
   Activity. Recurring bills are a collapsible section at the bottom of
   Expenses. Balances tab: each member pair as a sentence; "Simplify" toggle
@@ -152,7 +156,28 @@ flake.nix        devShells.default
   day (next date shown). Edit, pause, delete; a month whose bill was deleted
   can be added again by hand. Bills that change every month (electric, gas)
   are regular expenses, not recurring.
-- **Profile**: name, sign out.
+- **Profile**: name, sign out. App section: Install (when not installed),
+  "Notifications on this device" (asks the browser's permission on tap;
+  iPhone/iPad only once installed), and per-user switches for which pushes
+  to get, on every device: New expenses, Payments. The version (package.json,
+  also in GET /api/config) with "Check for updates"; when the server runs a
+  newer one, "Update to X" reloads the app.
+
+## Notifications
+
+Web Push from the Worker with no push library: payloads encrypted with
+WebCrypto (RFC 8291 aes128gcm), requests signed with a VAPID JWT (jose). The
+VAPID key pair is made on first use and kept in the database, so deploys need
+no extra secret. Pushes go out after the change is saved, never blocking it;
+a 404/410 from the push service deletes that subscription.
+
+- New expense: everyone with a share or a payment on it, except whoever
+  added it ("Ana added Groceries", "Your share is $12.40. 🏠 House"). Bills
+  from recurring templates stay quiet.
+- New payment: the payer and payee, except whoever recorded it ("Ben paid
+  you $20.00").
+- Tapping one opens the expense (or the group for a payment) in an open
+  divvy window when there is one.
 
 Design: clean, calm, legible. System font stack, generous spacing, one accent
 color, amounts always with words. Light and dark (follow system). Use
@@ -202,5 +227,5 @@ amount.
 
 ## Out of scope for v1
 
-Splitwise import, analytics, notifications/push, share links for people
-without accounts, PWA install, multiple currencies, notes.
+Splitwise import, analytics, share links for people without accounts,
+multiple currencies, notes.

@@ -136,7 +136,26 @@ export const PaymentInput = z.object({
 /** A personal access token's label, e.g. "Claude on my laptop". */
 export const TokenInput = z.object({ name });
 
+/** Which push notifications the acting user wants, on every device. */
+export const NotifyInput = z
+  .object({
+    expenses: z.boolean().optional(),
+    payments: z.boolean().optional(),
+  })
+  .refine((p) => p.expenses !== undefined || p.payments !== undefined, {
+    message: "Say which notifications to change",
+  });
+
+const pushKey = z.string().regex(/^[\w-]+$/, "Push keys must be base64url");
+/** A browser PushSubscription, as its toJSON() gives it. */
+export const SubscriptionInput = z.object({
+  endpoint: z.url({ protocol: /^https$/ }).max(2048),
+  keys: z.object({ p256dh: pushKey.max(200), auth: pushKey.max(100) }),
+});
+
 export type ProfileInput = z.input<typeof ProfileInput>;
+export type NotifyInput = z.input<typeof NotifyInput>;
+export type SubscriptionInput = z.input<typeof SubscriptionInput>;
 export type TokenInput = z.input<typeof TokenInput>;
 export type NewPersonInput = z.input<typeof NewPersonInput>;
 export type GroupInput = z.input<typeof GroupInput>;

@@ -10,6 +10,7 @@ import { adjustmentCents, computeSplit, payerErrors } from "../domain/split.ts";
 import type { Adjustments, Amounts, Cents } from "../domain/types.ts";
 import { requireGroup, requireRestorable, type Ctx } from "./context.ts";
 import { forbidden, invalid, notFound, ServiceError } from "./errors.ts";
+import { notifyExpense } from "./notifications.ts";
 import { monthName } from "./recurring.ts";
 import { parse } from "./parse.ts";
 import { ExpenseInput, id } from "./schemas.ts";
@@ -140,7 +141,9 @@ export function createExpense(
     });
     return expenseId;
   });
-  return getExpense(ctx, expenseId);
+  const view = getExpense(ctx, expenseId);
+  notifyExpense(ctx, view);
+  return view;
 }
 
 /** Whoever added an expense or paid any of it may edit or delete it. */

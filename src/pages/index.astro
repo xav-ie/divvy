@@ -4,6 +4,7 @@ import Chevron from "../components/Chevron.astro";
 import Piggy from "../components/Piggy.astro";
 import RichText from "../components/RichText.astro";
 import Avatar from "../components/Avatar.tsx";
+import InstallBanner from "../components/InstallBanner.tsx";
 import VenmoPay from "../components/VenmoPay.tsx";
 import Layout from "../layouts/Layout.astro";
 import { getMembers } from "../db/members.ts";
@@ -42,6 +43,7 @@ const groupNames = new Map(
   <p class="display" data-testid="overall">
     {summary.sentence}
   </p>
+  <InstallBanner client:only="react" />
 
   {groups.length === 0 ? (
     <div class="card mt-6 p-4">

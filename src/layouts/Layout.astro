@@ -294,7 +294,9 @@ const isTab = nav.some((n) => n.current);
 
     <script>
       import { showFlash } from "../client/toast.ts";
-      // Only so the app can be installed; the worker never handles requests.
+      // Catches the browser's install prompt for divvy's own Install buttons.
+      import "../client/pwa.ts";
+      // Installable app and push notifications; the worker never handles requests.
       if ("serviceWorker" in navigator)
         addEventListener(
           "load",

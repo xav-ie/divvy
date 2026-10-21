@@ -4,7 +4,7 @@
   "description": "Split bills with the people you live with.",
   "start_url": "/",
   "scope": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#f6f6f4",
   "icons": [
     {

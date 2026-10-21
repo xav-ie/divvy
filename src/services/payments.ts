@@ -6,6 +6,7 @@ import { transaction } from "../db/transaction.ts";
 import { formatCents } from "../domain/money.ts";
 import { requireGroup, requireRestorable, type Ctx } from "./context.ts";
 import { forbidden, invalid, notFound } from "./errors.ts";
+import { notifyPayment } from "./notifications.ts";
 import { parse } from "./parse.ts";
 import { id, PaymentInput } from "./schemas.ts";
 
@@ -54,7 +55,7 @@ export function recordPayment(
   ) {
     throw invalid("Both people must be in the group");
   }
-  return transaction(ctx.db, () => {
+  const view = transaction(ctx.db, () => {
     const paymentId = repo.insertPayment(ctx.db, {
       ...p,
       groupId: group.id,
@@ -72,6 +73,8 @@ export function recordPayment(
     });
     return view;
   });
+  notifyPayment(ctx, view);
+  return view;
 }
 
 /** Delete a payment. Its recorder or either person in it. */
