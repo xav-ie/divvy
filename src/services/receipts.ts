@@ -36,40 +36,84 @@ export interface ScanResult extends ScannedReceipt {
   receiptId: number;
 }
 
+/** The photo's type; throws a 4xx for anything too big or not an image the model reads. */
+function checkImage(image: Uint8Array): keyof typeof TYPES {
+  if (image.byteLength > MAX_RECEIPT_BYTES)
+    throw new ServiceError(413, "That photo is over 10 MB; try a smaller one");
+  const mediaType = sniffImage(image);
+  if (!mediaType)
+    throw new ServiceError(400, "Upload a JPEG, PNG, WebP or GIF photo");
+  return mediaType;
+}
+
+const requireScanning = () => {
+  if (!scanConfigured())
+    throw new ServiceError(
+      503,
+      "Receipt scanning isn't set up on this server. Enter the items by hand.",
+    );
+};
+
+async function read(
+  image: Uint8Array,
+  mediaType: string,
+  scan: typeof scanReceipt,
+): Promise<ScannedReceipt> {
+  try {
+    return await scan(image, mediaType);
+  } catch (err) {
+    if (err instanceof ScanError) throw new ServiceError(502, err.message);
+    throw err;
+  }
+}
+
+/** Keep a receipt photo (R2 `receipts/`) so an expense can link it; its id. */
+async function store(
+  ctx: Ctx,
+  image: Uint8Array,
+  mediaType: keyof typeof TYPES,
+): Promise<number> {
+  const path = `receipts/${crypto.randomUUID()}.${TYPES[mediaType]}`;
+  await files().put(path, image);
+  return repo.insertReceipt(ctx.db, {
+    path,
+    mediaType,
+    uploadedBy: ctx.user.id,
+  });
+}
+
 /**
- * Read a receipt photo, then keep it (R2 `receipts/`) so an expense can
- * link it. 503 when scanning isn't configured, 502 when it fails.
+ * Read a receipt photo, then keep it so an expense can link it. 503 when
+ * scanning isn't configured, 502 when it fails.
  */
 export async function scanAndStore(
   ctx: Ctx,
   image: Uint8Array,
   scan: typeof scanReceipt = scanReceipt,
 ): Promise<ScanResult> {
-  if (!scanConfigured())
-    throw new ServiceError(
-      503,
-      "Receipt scanning isn't set up on this server. Enter the items by hand.",
-    );
-  if (image.byteLength > MAX_RECEIPT_BYTES)
-    throw new ServiceError(413, "That photo is over 10 MB; try a smaller one");
-  const mediaType = sniffImage(image);
-  if (!mediaType)
-    throw new ServiceError(400, "Upload a JPEG, PNG, WebP or GIF photo");
-  let scanned: ScannedReceipt;
-  try {
-    scanned = await scan(image, mediaType);
-  } catch (err) {
-    if (err instanceof ScanError) throw new ServiceError(502, err.message);
-    throw err;
-  }
-  const path = `receipts/${crypto.randomUUID()}.${TYPES[mediaType]}`;
-  await files().put(path, image);
-  const receiptId = repo.insertReceipt(ctx.db, {
-    path,
-    mediaType,
-    uploadedBy: ctx.user.id,
-  });
-  return { receiptId, ...scanned };
+  requireScanning();
+  const mediaType = checkImage(image);
+  const scanned = await read(image, mediaType, scan);
+  return { receiptId: await store(ctx, image, mediaType), ...scanned };
+}
+
+/** Keep a photo shared to divvy without reading it yet (it attaches even when scanning is off). */
+export async function keepReceipt(
+  ctx: Ctx,
+  image: Uint8Array,
+): Promise<number> {
+  return store(ctx, image, checkImage(image));
+}
+
+/** Read a receipt already kept (a shared photo); the acting user must be able to see it. */
+export async function scanKept(
+  ctx: Ctx,
+  receiptId: number,
+  scan: typeof scanReceipt = scanReceipt,
+): Promise<ScanResult> {
+  requireScanning();
+  const { bytes, mediaType } = await readReceipt(ctx, receiptId);
+  return { receiptId, ...(await read(bytes, mediaType, scan)) };
 }
 
 /**

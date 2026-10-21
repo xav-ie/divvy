@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { expect, test } from "./fixtures.ts";
+import { expect, hydrated, seedGroup, test } from "./fixtures.ts";
 
 /** Width and height from a PNG's IHDR chunk. */
 const pngSize = (b: Buffer) => ({
@@ -24,10 +24,9 @@ test("installable: manifest, icons, head tags and a registered service worker", 
     start_url: "/",
     scope: "/",
     display: "fullscreen",
+    theme_color: "#0b7560",
     background_color: "#f6f6f4",
   });
-  // Without theme_color, Android Chrome (156+) leaves the navigation bar to the system light/dark theme.
-  expect(manifest).not.toHaveProperty("theme_color");
   const purposes = manifest.icons.map((i: { purpose: string }) => i.purpose);
   expect(purposes).toEqual(
     expect.arrayContaining(["any", "maskable", "monochrome"]),
@@ -282,4 +281,112 @@ test("Profile shows the version and offers an update once a newer one is deploye
   const reloaded = page.waitForEvent("load");
   await page.getByRole("button", { name: "Update to 99.0.0" }).click();
   await reloaded;
+});
+
+test("install sheet extras: screenshots, shortcuts and the share target", async ({
+  as,
+}) => {
+  const ana = await as("Ana");
+  const manifest = await (await ana.api.get("/manifest.webmanifest")).json();
+  for (const s of manifest.screenshots as { src: string; type: string }[]) {
+    const res = await ana.api.get(s.src);
+    expect(res.ok(), s.src).toBe(true);
+    expect(res.headers()["content-type"]).toBe(s.type);
+  }
+  expect(
+    manifest.screenshots.map((s: { form_factor: string }) => s.form_factor),
+  ).toEqual(expect.arrayContaining(["narrow", "wide"]));
+  for (const sc of manifest.shortcuts as {
+    url: string;
+    icons: { src: string; sizes: string }[];
+  }[]) {
+    expect((await ana.api.get(sc.url)).ok(), sc.url).toBe(true);
+    for (const i of sc.icons) {
+      const png = await ana.api.get(i.src);
+      const { width, height } = pngSize(await png.body());
+      expect(`${width}x${height}`, i.src).toBe(i.sizes);
+    }
+  }
+  expect(manifest.share_target).toMatchObject({
+    action: "/share",
+    method: "POST",
+    enctype: "multipart/form-data",
+    params: { files: [{ name: "receipt" }] },
+  });
+});
+
+// 1x1 transparent PNG.
+const PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+  "base64",
+);
+
+test("a photo shared to divvy opens a new expense that reads it", async ({
+  as,
+}) => {
+  const [ana, ben] = await Promise.all([as("Ana"), as("Ben")]);
+  const flat = await seedGroup(ana, [ben], "Flat");
+  const page = await ana.page();
+
+  // Android posts the photo to the share target; follow its redirect.
+  const shared = await ana.api.post("/share", {
+    multipart: {
+      receipt: { name: "receipt.png", mimeType: "image/png", buffer: PNG },
+    },
+    maxRedirects: 0,
+  });
+  expect(shared.status()).toBe(303);
+  const to = shared.headers()["location"]!;
+  const receiptId = Number(new URL(to, "http://x").searchParams.get("receipt"));
+
+  await page.route("**/api/config", (r) =>
+    r.fulfill({ json: { scan: true, version: "0.0.0" } }),
+  );
+  await page.route(`**/api/receipts/${receiptId}/scan`, (r) =>
+    r.fulfill({
+      json: {
+        receiptId,
+        merchant: "Corner Bistro",
+        date: "2026-10-09",
+        items: [{ name: "Burger", quantity: 2, unitCents: 1250 }],
+        taxCents: 0,
+        tipCents: 0,
+        discountCents: 0,
+        totalCents: 2500,
+      },
+    }),
+  );
+  // A file that isn't a photo comes back with the reason.
+  const bad = await ana.api.post("/share", {
+    multipart: {
+      receipt: {
+        name: "a.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("hi"),
+      },
+    },
+    maxRedirects: 0,
+  });
+  await page.goto(bad.headers()["location"]!);
+  await expect(page.getByRole("alert")).toHaveText(
+    "Upload a JPEG, PNG, WebP or GIF photo",
+  );
+
+  // One group: straight to its form.
+  const form = `/groups/${flat}/expenses/new?receipt=${receiptId}`;
+  const one = await ana.api.get(to, { maxRedirects: 0 });
+  expect(one.status()).toBe(302);
+  expect(one.headers()["location"]).toBe(form);
+
+  // Several groups: pick one, and the form reads the photo.
+  await seedGroup(ana, [], "Trip");
+  await page.goto(to);
+  await expect(page.getByText("Add the receipt to which group?")).toBeVisible();
+  await page.getByRole("link", { name: "Flat" }).click();
+  await expect(page).toHaveURL(new RegExp(`${form.replace("?", "\\?")}$`));
+  await hydrated(page);
+  await expect(
+    page.getByText("Filled 1 items from the receipt ($25.00)."),
+  ).toBeVisible();
+  await expect(page.getByLabel("Title")).toHaveValue("Corner Bistro");
 });

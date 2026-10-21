@@ -152,6 +152,15 @@ flake.nix        devShells.default
 - **Expense detail**: what it is, who paid, each person's share, items,
   receipt image if any, edit/delete for whoever may edit it.
 - **Settle up / record payment**: from, to, amount (prefilled), date, note.
+- **Add expense, any group** (`/expenses/new`): the app shortcut and shared
+  photos land here; with one group it goes straight to that group's form,
+  otherwise it asks which group.
+- **Installed app extras** (manifest): screenshots for Android's richer
+  install sheet (regenerate with `DIVVY_STORE_SHOTS=1 npm run e2e --
+e2e/store-screenshots.spec.ts`); long-press shortcuts Add expense and
+  Settle up; a share target, so a photo shared from another app is kept as a
+  receipt (`POST /share`) and opens Add expense, which reads it when scanning
+  is on and otherwise just attaches it.
 - **Recurring**: per group, fixed amounts only, billed automatically on their
   day (next date shown). Edit, pause, delete; a month whose bill was deleted
   can be added again by hand. Bills that change every month (electric, gas)

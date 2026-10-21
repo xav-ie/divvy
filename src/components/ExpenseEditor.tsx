@@ -41,6 +41,8 @@ interface Props {
   me: MemberId;
   /** Present when editing. */
   expense?: SavedExpense & { id: number };
+  /** A photo shared to divvy: attached, and read when scanning is on. */
+  sharedReceiptId?: number;
 }
 
 interface ScanResult {
@@ -69,10 +71,16 @@ export default function ExpenseEditor({
   members,
   me,
   expense,
+  sharedReceiptId,
 }: Props) {
   const everyone = members.map((m) => m.id);
   const [s, setS] = useState<EditorState>(() =>
-    expense ? fromExpense(expense, me) : emptyState(everyone, me, todayLocal()),
+    expense
+      ? fromExpense(expense, me)
+      : {
+          ...emptyState(everyone, me, todayLocal()),
+          receiptId: sharedReceiptId ?? null,
+        },
   );
   const [initial] = useState(() => JSON.stringify(s));
   const guard = useLeaveGuard(JSON.stringify(s) !== initial);
@@ -87,7 +95,22 @@ export default function ExpenseEditor({
 
   useEffect(() => {
     api<{ scan: boolean }>("GET", "/api/config")
-      .then((c) => setScanOn(c.scan))
+      .then((c) => {
+        setScanOn(c.scan);
+        if (!sharedReceiptId) return;
+        if (!c.scan)
+          return setScanNote(
+            "The shared photo is attached as the receipt. Enter the amount by hand.",
+          );
+        void scan.run(async () =>
+          applyScan(
+            await api<ScanResult>(
+              "POST",
+              `/api/receipts/${sharedReceiptId}/scan`,
+            ),
+          ),
+        );
+      })
       .catch(() => setScanOn(false));
   }, []);
 
@@ -123,37 +146,41 @@ export default function ExpenseEditor({
     await scan.run(async () => {
       const form = new FormData();
       form.append("file", file);
-      const r = await api<ScanResult>("POST", "/api/receipts/scan", form);
-      const dollars = (v: number): Extra => ({
-        value: v ? centsInput(v) : "",
-        unit: "$",
-      });
-      setS((p) => {
-        const next: EditorState = {
-          ...p,
-          title: p.title.trim() ? p.title : r.merchant,
-          date: r.date || p.date,
-          itemize: true,
-          items: r.items.map((it) =>
-            newItem(everyone, {
-              name: it.name,
-              qty: String(it.quantity),
-              price: centsInput(it.unitCents),
-            }),
-          ),
-          tax: dollars(r.taxCents),
-          tip: dollars(r.tipCents),
-          discount: dollars(r.discountCents),
-          receiptId: r.receiptId,
-        };
-        const total = compute(next).split.totalCents;
-        setScanNote(
-          total === r.totalCents
-            ? `Filled ${r.items.length} items from the receipt (${formatCents(r.totalCents)}). Check who had what.`
-            : `The receipt says ${formatCents(r.totalCents)} but the items add up to ${formatCents(total)}. Check the items.`,
-        );
-        return next;
-      });
+      applyScan(await api<ScanResult>("POST", "/api/receipts/scan", form));
+    });
+  }
+
+  /** Fill the form from a read receipt and link it. */
+  function applyScan(r: ScanResult) {
+    const dollars = (v: number): Extra => ({
+      value: v ? centsInput(v) : "",
+      unit: "$",
+    });
+    setS((p) => {
+      const next: EditorState = {
+        ...p,
+        title: p.title.trim() ? p.title : r.merchant,
+        date: r.date || p.date,
+        itemize: true,
+        items: r.items.map((it) =>
+          newItem(everyone, {
+            name: it.name,
+            qty: String(it.quantity),
+            price: centsInput(it.unitCents),
+          }),
+        ),
+        tax: dollars(r.taxCents),
+        tip: dollars(r.tipCents),
+        discount: dollars(r.discountCents),
+        receiptId: r.receiptId,
+      };
+      const total = compute(next).split.totalCents;
+      setScanNote(
+        total === r.totalCents
+          ? `Filled ${r.items.length} items from the receipt (${formatCents(r.totalCents)}). Check who had what.`
+          : `The receipt says ${formatCents(r.totalCents)} but the items add up to ${formatCents(total)}. Check the items.`,
+      );
+      return next;
     });
   }
 

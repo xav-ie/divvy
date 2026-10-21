@@ -5,6 +5,7 @@
   "start_url": "/",
   "scope": "/",
   "display": "fullscreen",
+  "theme_color": "#0b7560",
   "background_color": "#f6f6f4",
   "icons": [
     {
@@ -31,5 +32,86 @@
       "type": "image/png",
       "purpose": "monochrome"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/home-phone.jpg",
+      "sizes": "1082x2202",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Who owes whom, in plain sentences"
+    },
+    {
+      "src": "/screenshots/group-phone.jpg",
+      "sizes": "1082x2202",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "A household's shared expenses"
+    },
+    {
+      "src": "/screenshots/expense-phone.jpg",
+      "sizes": "1082x2202",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Exactly who paid and each share"
+    },
+    {
+      "src": "/screenshots/home-desktop.jpg",
+      "sizes": "1400x900",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Who owes whom, in plain sentences"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add expense",
+      "url": "/expenses/new",
+      "icons": [
+        {
+          "src": "/icons/shortcut-add-192.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        },
+        {
+          "src": "/icons/shortcut-add-192.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "maskable"
+        }
+      ]
+    },
+    {
+      "name": "Settle up",
+      "url": "/settle",
+      "icons": [
+        {
+          "src": "/icons/shortcut-settle-192.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        },
+        {
+          "src": "/icons/shortcut-settle-192.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "maskable"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "receipt",
+          "accept": ["image/jpeg", "image/png", "image/webp", "image/gif"]
+        }
+      ]
+    }
+  }
 }

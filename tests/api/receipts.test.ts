@@ -161,4 +161,42 @@ describe("receipts api", () => {
     });
     expect(removed.body.receiptId).toBe(null);
   });
+
+  it("keeps a shared photo, then reads it for whoever shared it", async () => {
+    fakeAi();
+    const form = new FormData();
+    form.set("receipt", new File([PNG], "shared.png"));
+    const shared = await call("POST", "/share", { form });
+    expect(shared.status).toBe(303);
+    const to = shared.headers.get("location")!;
+    expect(to).toMatch(/^\/expenses\/new\?receipt=\d+$/);
+    const receiptId = Number(
+      new URL(to, "http://x").searchParams.get("receipt"),
+    );
+    // Kept even while scanning is off, so the photo still attaches.
+    expect((await call("GET", `/api/receipts/${receiptId}`)).status).toBe(200);
+    expect((await call("POST", `/api/receipts/${receiptId}/scan`)).status).toBe(
+      503,
+    );
+
+    fakeAi(RECEIPT);
+    const scanned = await call("POST", `/api/receipts/${receiptId}/scan`);
+    expect(scanned.status).toBe(200);
+    expect(scanned.body).toMatchObject({ receiptId, merchant: "Corner Shop" });
+    expect(
+      (
+        await call("POST", `/api/receipts/${receiptId}/scan`, {
+          as: "ben@example.com",
+        })
+      ).status,
+    ).toBe(404);
+
+    const bad = new FormData();
+    bad.set("receipt", new File([new TextEncoder().encode("hi")], "a.txt"));
+    const rejected = await call("POST", "/share", { form: bad });
+    expect(rejected.status).toBe(303);
+    expect(rejected.headers.get("location")).toBe(
+      `/expenses/new?error=${encodeURIComponent("Upload a JPEG, PNG, WebP or GIF photo")}`,
+    );
+  });
 });

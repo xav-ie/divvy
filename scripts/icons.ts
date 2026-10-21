@@ -80,6 +80,24 @@ const icons: Array<{ file: string; size: number; svg: string }> = [
     svg: svg(`${tile(96)}${piggy({ s: 1.12, legs: false })}`),
   },
 ];
+// App shortcuts (long-press the home screen icon): a white Lucide glyph on
+// the full-bleed tile, inside the maskable safe circle.
+const glyph = (paths: string) =>
+  `<g transform="translate(256 256) scale(9) translate(-12 -12)" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</g>`;
+const SHORTCUTS = {
+  // Lucide "plus".
+  "shortcut-add": '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  // Lucide "arrow-left-right".
+  "shortcut-settle":
+    '<path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/>',
+};
+for (const [name, paths] of Object.entries(SHORTCUTS))
+  icons.push({
+    file: `${name}-192.png`,
+    size: 192,
+    svg: svg(`${tile()}${glyph(paths)}`),
+  });
+
 // Vector copies for the browser tab and as the source of record.
 writeFileSync(
   "public/favicon.svg",
