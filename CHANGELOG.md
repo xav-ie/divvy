@@ -1,5 +1,23 @@
 # divvy
 
+## 0.2.0
+
+### Minor Changes
+
+- 3b91bc9: Profile shows which version you're on and offers an update when a newer one
+  has been deployed since the app was opened.
+- 3b91bc9: divvy now offers to install itself: a dismissible card on Home and an Install
+  button in Profile (on iPhone and iPad, the Add to Home Screen steps). It can
+  also send push notifications when someone adds an expense you're on or
+  records a payment to or from you. Turn them on per device in Profile, which
+  also has switches for each kind; the installed app offers them once too.
+
+### Patch Changes
+
+- 3b91bc9: The installed app on Android now opens full screen, so no white system
+  navigation bar shows under it; swipe from the edge to bring the system bars
+  back.
+
 ## 0.1.1
 
 ### Patch Changes
