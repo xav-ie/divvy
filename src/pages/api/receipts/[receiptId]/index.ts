@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
-import { json } from "../../../api/http.ts";
-import { ServiceError } from "../../../services/errors.ts";
-import { readReceipt } from "../../../services/receipts.ts";
+import { json } from "../../../../api/http.ts";
+import { ServiceError } from "../../../../services/errors.ts";
+import { readReceipt } from "../../../../services/receipts.ts";
 
 export const GET: APIRoute = async ({ locals, params }) => {
   try {

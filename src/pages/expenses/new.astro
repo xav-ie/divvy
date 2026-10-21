@@ -1,0 +1,54 @@
+---
+import Chevron from "../../components/Chevron.astro";
+import Layout from "../../layouts/Layout.astro";
+import { listGroups } from "../../services/groups.ts";
+
+// "Add expense" without a group: the app shortcut and photos shared to divvy
+// (`?receipt=`) land here. One group goes straight to its form.
+const q = Astro.url.searchParams;
+const receipt = Number(q.get("receipt")) || undefined;
+const error = q.get("error");
+const groups = listGroups(Astro.locals.ctx);
+const formFor = (groupId: number) =>
+  `/groups/${groupId}/expenses/new${receipt ? `?receipt=${receipt}` : ""}`;
+if (groups.length === 1 && !error)
+  return Astro.redirect(formFor(groups[0]!.id));
+---
+
+<Layout title="Add expense" back="/">
+  {error && (
+    <p role="alert" class="error mb-4">
+      {error}
+    </p>
+  )}
+  {groups.length === 0 ? (
+    <div class="card p-4">
+      <p>Expenses belong to a group. Create one for your household first.</p>
+      <a href="/groups" class="btn btn-primary mt-3 w-full">
+        Create a group
+      </a>
+    </div>
+  ) : (
+    <>
+      <p class="mb-3 text-muted">
+        {receipt ? "Add the receipt to which group?" : "Add it to which group?"}
+      </p>
+      <ul
+        class="card divide-y divide-line overflow-hidden"
+        aria-label="Your groups"
+      >
+        {groups.map((g) => (
+          <li>
+            <a href={formFor(g.id)} class="row-link">
+              <span class="w-8 text-center text-2xl" aria-hidden="true">
+                {g.emoji || "👥"}
+              </span>
+              <span class="flex-1 font-medium">{g.name}</span>
+              <Chevron />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </>
+  )}
+</Layout>

@@ -13,6 +13,8 @@ try {
   if (err instanceof ServiceError) return Astro.rewrite("/404");
   throw err;
 }
+// A photo shared to divvy (src/pages/share.ts), read once the form opens.
+const receipt = Number(Astro.url.searchParams.get("receipt")) || undefined;
 ---
 
 <Layout
@@ -31,6 +33,7 @@ try {
     client:only="react"
     groupId={group.id}
     me={ctx.user.memberId}
+    sharedReceiptId={receipt}
     members={group.members.map((m) => ({
       id: m.id,
       name: m.name,
