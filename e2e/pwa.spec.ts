@@ -22,7 +22,7 @@ test("installable: manifest, icons, head tags and a registered service worker", 
     short_name: "divvy",
     start_url: "/",
     scope: "/",
-    display: "standalone",
+    display: "fullscreen",
     background_color: "#f6f6f4",
   });
   // Without theme_color, Android Chrome (156+) leaves the navigation bar to the system light/dark theme.
