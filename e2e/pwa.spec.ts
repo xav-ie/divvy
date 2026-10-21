@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, test } from "./fixtures.ts";
 
 /** Width and height from a PNG's IHDR chunk. */
@@ -254,4 +255,31 @@ test("Profile turns notifications on for this device and picks which ones", asyn
   await again.click();
   await removed;
   await expect(again).not.toBeChecked();
+});
+
+test("Profile shows the version and offers an update once a newer one is deployed", async ({
+  as,
+}) => {
+  const { version } = JSON.parse(
+    readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+  ) as { version: string };
+  const ana = await as("Ana");
+  const page = await ana.page();
+  await page.goto("/profile");
+  await expect(page.getByTestId("app-version")).toHaveText(
+    `Version ${version}`,
+  );
+  await page.getByRole("button", { name: "Check for updates" }).click();
+  await expect(page.getByRole("status")).toContainText(
+    "You're on the latest version",
+  );
+
+  await page.route("**/api/config", (r) =>
+    r.fulfill({ json: { scan: false, version: "99.0.0" } }),
+  );
+  await page.getByRole("button", { name: "Check for updates" }).click();
+  await expect(page.getByText("Version 99.0.0 is available.")).toBeVisible();
+  const reloaded = page.waitForEvent("load");
+  await page.getByRole("button", { name: "Update to 99.0.0" }).click();
+  await reloaded;
 });

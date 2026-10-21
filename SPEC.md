@@ -159,7 +159,9 @@ flake.nix        devShells.default
 - **Profile**: name, sign out. App section: Install (when not installed),
   "Notifications on this device" (asks the browser's permission on tap;
   iPhone/iPad only once installed), and per-user switches for which pushes
-  to get, on every device: New expenses, Payments.
+  to get, on every device: New expenses, Payments. The version (package.json,
+  also in GET /api/config) with "Check for updates"; when the server runs a
+  newer one, "Update to X" reloads the app.
 
 ## Notifications
 

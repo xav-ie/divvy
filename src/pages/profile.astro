@@ -7,6 +7,7 @@ import ProfileForm from "../components/ProfileForm.tsx";
 import Skeleton from "../components/Skeleton.astro";
 import SwitchPerson from "../components/SwitchPerson.tsx";
 import Layout from "../layouts/Layout.astro";
+import { VERSION } from "../config.ts";
 import { listEmails } from "../services/emails.ts";
 import { getPushSettings } from "../services/notifications.ts";
 import { listTokens } from "../services/tokens.ts";
@@ -35,7 +36,11 @@ const { expenses, payments } = await getPushSettings(Astro.locals.ctx);
   >
     <Skeleton slot="fallback" rows={2} />
   </SignInEmails>
-  <AppSettings client:only="react" initial={{ expenses, payments }}>
+  <AppSettings
+    client:only="react"
+    initial={{ expenses, payments }}
+    version={VERSION}
+  >
     <Skeleton slot="fallback" rows={3} />
   </AppSettings>
   <AssistantAccess client:only="react" initial={listTokens(Astro.locals.ctx)}>

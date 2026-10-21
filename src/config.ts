@@ -1,4 +1,8 @@
 import { env as workerEnv } from "cloudflare:workers";
+import pkg from "../package.json" with { type: "json" };
+
+/** The deployed release (package.json, bumped by changesets). */
+export const VERSION = pkg.version;
 
 type Vars = Record<string, string | undefined>;
 

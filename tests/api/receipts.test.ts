@@ -21,12 +21,16 @@ const upload = (bytes: Uint8Array<ArrayBuffer>, name = "r.png") => {
 describe("receipts api", () => {
   it("reports whether scanning is configured", async () => {
     fakeAi();
-    expect((await call("GET", "/api/config")).body).toEqual({ scan: false });
+    expect((await call("GET", "/api/config")).body).toMatchObject({
+      scan: false,
+    });
     expect(
       (await call("POST", "/api/receipts/scan", { form: upload(PNG) })).status,
     ).toBe(503);
     fakeAi(RECEIPT);
-    expect((await call("GET", "/api/config")).body).toEqual({ scan: true });
+    expect((await call("GET", "/api/config")).body).toMatchObject({
+      scan: true,
+    });
   });
 
   it("rejects non-images and reports scan failures", async () => {

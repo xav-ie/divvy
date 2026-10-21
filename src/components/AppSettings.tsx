@@ -46,8 +46,19 @@ function Switch(props: {
   );
 }
 
-/** Profile's app section: install divvy, and push notifications per device and per kind. */
-export default function AppSettings({ initial }: { initial: Prefs }) {
+/** The release this server runs now; a page open since before a deploy shows an older one. */
+const deployedVersion = async () =>
+  (await api<{ version: string }>("GET", "/api/config")).version;
+
+/** Profile's app section: install divvy, push notifications per device and per kind, and the version. */
+export default function AppSettings({
+  initial,
+  version,
+}: {
+  initial: Prefs;
+  /** The release this page was loaded from. */
+  version: string;
+}) {
   const [prefs, setPrefs] = useState(initial);
   const [installed, setInstalled] = useState(isInstalled());
   const [promptable, setPromptable] = useState(canPromptInstall());
@@ -55,6 +66,13 @@ export default function AppSettings({ initial }: { initial: Prefs }) {
   const install = useAction();
   const toggle = useAction();
   const save = useAction();
+  const check = useAction();
+  const [latest, setLatest] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Quietly on open; the button reports problems.
+    deployedVersion().then(setLatest, () => {});
+  }, []);
 
   useEffect(() => {
     const update = () => {
@@ -164,6 +182,48 @@ export default function AppSettings({ initial }: { initial: Prefs }) {
             onChange={(on) => void setPref("payments", on)}
           />
           <ErrorText>{save.error}</ErrorText>
+        </div>
+        <div className="border-t border-line pt-4">
+          <p className="font-medium" data-testid="app-version">
+            Version {version}
+          </p>
+          {latest && latest !== version ? (
+            <>
+              <p className="text-sm text-muted">
+                Version {latest} is available.
+              </p>
+              <button
+                type="button"
+                className="btn btn-primary mt-2 w-full"
+                onClick={async () => {
+                  await (
+                    await navigator.serviceWorker?.getRegistration()
+                  )
+                    ?.update()
+                    .catch(() => {});
+                  location.reload();
+                }}
+              >
+                Update to {latest}
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-secondary mt-2 w-full"
+              disabled={check.busy}
+              onClick={() =>
+                check.run(async () => {
+                  const now = await deployedVersion();
+                  setLatest(now);
+                  if (now === version) toast("You're on the latest version");
+                })
+              }
+            >
+              Check for updates
+            </button>
+          )}
+          <ErrorText>{check.error}</ErrorText>
         </div>
       </div>
     </section>
