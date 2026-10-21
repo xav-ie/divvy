@@ -24,10 +24,9 @@ test("installable: manifest, icons, head tags and a registered service worker", 
     start_url: "/",
     scope: "/",
     display: "fullscreen",
+    theme_color: "#0b7560",
     background_color: "#f6f6f4",
   });
-  // Without theme_color, Android Chrome (156+) leaves the navigation bar to the system light/dark theme.
-  expect(manifest).not.toHaveProperty("theme_color");
   const purposes = manifest.icons.map((i: { purpose: string }) => i.purpose);
   expect(purposes).toEqual(
     expect.arrayContaining(["any", "maskable", "monochrome"]),
