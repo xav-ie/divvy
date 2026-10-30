@@ -44,6 +44,7 @@ export function route(handler: (call: Call) => unknown): APIRoute {
     }
     try {
       const out = await handler({ ctx: locals.ctx, locals, params, url, body });
+      if (out instanceof Response) return out;
       return out === undefined
         ? new Response(null, { status: 204 })
         : json(out);

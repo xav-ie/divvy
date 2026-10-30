@@ -178,6 +178,13 @@ const title = `${group.emoji} ${group.name}`.trim();
           Record payment
         </a>
       </div>
+      <a
+        href={`/api/groups/${group.id}/export`}
+        download
+        class="mb-4 flex min-h-11 items-center justify-center gap-1 rounded-lg border border-line text-sm text-muted hover:bg-surface"
+      >
+        Export CSV
+      </a>
       {entries.length === 0 ? (
         <p class="card p-4 text-muted">No expenses yet. Add the first one.</p>
       ) : (
