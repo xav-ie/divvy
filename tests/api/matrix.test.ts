@@ -1,4 +1,5 @@
 import { beforeAll, expect, it } from "vitest";
+import { todayLocal } from "../../src/domain/recurring.ts";
 import { apiClient } from "./client.ts";
 
 /**
@@ -7,6 +8,12 @@ import { apiClient } from "./client.ts";
  * (or tightening) fails loudly. Roles: anonymous (unknown dev user), EVE
  * (signed in, not a member), BEN/DEE (members, not creators), ANA (creator).
  */
+// The recurring fixture is billed on day 28 without billThisMonth. Once the
+// 28th has passed, createRecurring starts it next month, so billing "this
+// month" is correctly rejected (starts in <next month>). Expect that 400 on
+// the 29th-31st instead of the success the row asserts the rest of the month.
+const lateInMonth = Number(todayLocal().slice(8, 10)) > 28;
+
 const ANA = "ana@example.com";
 const BEN = "ben@example.com";
 const DEE = "dee@example.com";
@@ -447,7 +454,9 @@ const rows: Row[] = [
     method: "POST",
     path: () => `/api/recurring/${recurringId}/bill`,
     as: BEN,
-    ok: true,
+    ok: !lateInMonth,
+    status: lateInMonth ? 400 : undefined,
+    error: lateInMonth ? "starts in" : undefined,
   },
   {
     label: "ben: toggle simplify",
