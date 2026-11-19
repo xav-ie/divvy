@@ -2,6 +2,8 @@ import { handle } from "@astrojs/cloudflare/handler";
 import { DurableObject } from "cloudflare:workers";
 import { useDb } from "./db/connection.ts";
 import { migrate } from "./db/migrate.ts";
+import { remindTurns } from "./services/chores.ts";
+import { pushesSettled } from "./services/notifications.ts";
 import { billDue } from "./services/recurring.ts";
 
 /**
@@ -20,8 +22,8 @@ export class Divvy extends DurableObject<Env> {
     return handle(request, this.env, this.ctx as unknown as ExecutionContext);
   }
 
-  /** Bill fixed recurring templates whose day has come this month. */
-  recur(): void {
+  /** Daily: bill recurring templates whose day has come, and push chore turns starting today. */
+  async recur(): Promise<void> {
     const { billed, skipped, failed } = billDue(this.ctx.storage);
     for (const b of billed)
       console.log(`Billed "${b.title}" as expense ${b.expenseId}`);
@@ -31,6 +33,9 @@ export class Divvy extends DurableObject<Env> {
       console.error(
         `Couldn't bill "${f.title}" (recurring ${f.recurringId}): ${f.error}`,
       );
+    const reminded = remindTurns(this.ctx.storage);
+    if (reminded) console.log(`Reminded ${reminded} chore turns`);
+    await pushesSettled();
   }
 }
 

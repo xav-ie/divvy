@@ -1,3 +1,4 @@
+import { moveChoreMember } from "./chores.ts";
 import type { Db } from "./connection.ts";
 import { all, insertedId, one, placeholders, run } from "./rows.ts";
 
@@ -104,7 +105,8 @@ function moveSplitKeys(json: string, from: number, into: number): string {
 
 /**
  * Move everything that references member `from` onto member `into` (group
- * memberships, payers, shares, item splits, payments, recurring templates),
+ * memberships, payers, shares, item splits, payments, recurring templates,
+ * chores),
  * then delete `from`. Run inside a transaction.
  */
 export function mergeMember(db: Db, from: number, into: number): void {
@@ -153,5 +155,6 @@ export function mergeMember(db: Db, from: number, into: number): void {
   );
   run(db, "UPDATE payments SET to_member = ? WHERE to_member = ?", into, from);
   run(db, "DELETE FROM payments WHERE from_member = to_member");
+  moveChoreMember(db, from, into);
   run(db, "DELETE FROM members WHERE id = ?", from);
 }

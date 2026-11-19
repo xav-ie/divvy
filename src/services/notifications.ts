@@ -15,7 +15,7 @@ import { parse } from "./parse.ts";
 import { NotifyInput, SubscriptionInput } from "./schemas.ts";
 
 /** What the service worker shows (public/sw.js). */
-interface PushMessage {
+export interface PushMessage {
   title: string;
   body: string;
   /** Opened when the notification is tapped. */
@@ -52,7 +52,7 @@ export function updateNotifyPrefs(
   input: NotifyInput,
 ): repo.NotifyPrefs {
   const prefs = parse(NotifyInput, input);
-  for (const kind of ["expenses", "payments"] as const)
+  for (const kind of ["expenses", "payments", "chores"] as const)
     if (prefs[kind] !== undefined)
       repo.setPref(ctx.db, ctx.user.id, kind, prefs[kind]);
   return repo.getPrefs(ctx.db, ctx.user.id);
@@ -90,10 +90,20 @@ function deliver(
   kind: repo.NotifyKind,
   messages: Map<number, PushMessage>,
 ): void {
-  const subs = repo.subscriptionsFor(ctx.db, [...messages.keys()], kind);
+  pushTo(ctx.db, ctx.user.email, kind, messages);
+}
+
+/** Like deliver, for pushes nobody's action caused (the daily cron); `email` signs them. */
+export function pushTo(
+  db: Db,
+  email: string,
+  kind: repo.NotifyKind,
+  messages: Map<number, PushMessage>,
+): void {
+  const subs = repo.subscriptionsFor(db, [...messages.keys()], kind);
   if (subs.length === 0) return;
-  const subject = `mailto:${ctx.user.email}`;
-  const job = vapidKeys(ctx.db).then((vapid) =>
+  const subject = `mailto:${email}`;
+  const job = vapidKeys(db).then((vapid) =>
     Promise.all(
       subs.map(async (s) => {
         try {
@@ -104,7 +114,7 @@ function deliver(
             subject,
           );
           if (status === 404 || status === 410)
-            repo.deleteSubscription(ctx.db, s.endpoint);
+            repo.deleteSubscription(db, s.endpoint);
           else if (status >= 400)
             console.error(`Push to ${new URL(s.endpoint).host}: ${status}`);
         } catch (err) {

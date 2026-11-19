@@ -17,6 +17,7 @@ import { ErrorText, useAction } from "./ui.tsx";
 interface Prefs {
   expenses: boolean;
   payments: boolean;
+  chores: boolean;
 }
 
 function Switch(props: {
@@ -180,6 +181,14 @@ export default function AppSettings({
             checked={prefs.payments}
             disabled={save.busy}
             onChange={(on) => void setPref("payments", on)}
+          />
+          <Switch
+            name="notify-chores"
+            label="Chores"
+            hint="Your turn starts, or someone swaps a turn with you."
+            checked={prefs.chores}
+            disabled={save.busy}
+            onChange={(on) => void setPref("chores", on)}
           />
           <ErrorText>{save.error}</ErrorText>
         </div>

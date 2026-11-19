@@ -59,7 +59,7 @@ export function updateGroup(
   patch: GroupPatch,
 ): GroupDetail {
   const p = parse(GroupPatch, patch);
-  // Any member may toggle simplify; renaming is the creator's.
+  // Any member may toggle simplify and chores; renaming is the creator's.
   const group =
     p.name === undefined && p.emoji === undefined
       ? requireGroup(ctx, parse(id, groupId))
@@ -68,6 +68,7 @@ export function updateGroup(
     name: p.name ?? group.name,
     emoji: p.emoji ?? group.emoji,
     simplify: p.simplify ?? group.simplify,
+    chores: p.chores ?? group.chores,
   });
   return getGroup(ctx, group.id);
 }

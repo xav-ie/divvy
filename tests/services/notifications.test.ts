@@ -11,6 +11,13 @@ import {
   updateNotifyPrefs,
 } from "../../src/services/notifications.ts";
 import { recordPayment } from "../../src/services/payments.ts";
+import {
+  addAway,
+  createChore,
+  remindTurns,
+  swapTurn,
+} from "../../src/services/chores.ts";
+import { updateGroup } from "../../src/services/groups.ts";
 import { ServiceError } from "../../src/services/errors.ts";
 import { setup, simpleExpense, type Setup } from "../helpers.ts";
 
@@ -104,6 +111,7 @@ describe("push notifications", () => {
       expect(updateNotifyPrefs(ben, { payments: false })).toEqual({
         expenses: true,
         payments: false,
+        chores: true,
       });
       sent.length = 0;
       pay();
@@ -145,5 +153,49 @@ describe("push notifications", () => {
       const bad = await device("http://push.example.com/x");
       expect(() => subscribe(ana, bad)).toThrow(ServiceError);
       expect(() => updateNotifyPrefs(ana, {})).toThrow(ServiceError);
+    }));
+
+  it("pushes chore turns once on their first day, and swaps to the other person", () =>
+    setup(async (t) => {
+      const { db, ana, ben, cy, group } = await house(t);
+      updateGroup(ana, group.id, { chores: true });
+      const [a, b, c] = [ana, ben, cy].map((x) => x.user.memberId);
+      const chore = createChore(ana, group.id, {
+        name: "Dishes",
+        everyDays: 7,
+        starts: "2026-11-16",
+        rotation: [a!, b!, c!],
+      });
+      addAway(ana, group.id, {
+        memberId: b!,
+        from: "2026-11-20",
+        until: "2026-11-25",
+      });
+      const sent = pushService();
+      expect(remindTurns(db, "2026-11-22")).toBe(0);
+      expect(remindTurns(db, "2026-11-23")).toBe(1);
+      expect(remindTurns(db, "2026-11-23")).toBe(0);
+      await pushesSettled();
+      expect(sent).toEqual(["https://push.example.com/cy"]);
+
+      sent.length = 0;
+      updateNotifyPrefs(ana, { chores: false });
+      swapTurn(
+        cy,
+        chore.id,
+        { turnStart: "2026-11-23", memberId: b! },
+        "2026-11-24",
+      );
+      await pushesSettled();
+      expect(sent).toEqual(["https://push.example.com/ben"]);
+      sent.length = 0;
+      swapTurn(
+        ben,
+        chore.id,
+        { turnStart: "2026-11-23", memberId: a! },
+        "2026-11-24",
+      );
+      await pushesSettled();
+      expect(sent).toEqual([]);
     }));
 });

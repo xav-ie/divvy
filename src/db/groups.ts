@@ -11,13 +11,22 @@ export interface Group {
   created: string;
   /** Balances show the fewest transfers that settle everyone. */
   simplify: boolean;
+  /** Chores (rotating jobs) are turned on for this group. */
+  chores: boolean;
 }
 
 const SELECT =
-  "SELECT g.id, g.name, g.emoji, g.created_by AS createdBy, g.created, g.simplify FROM groups g";
+  "SELECT g.id, g.name, g.emoji, g.created_by AS createdBy, g.created, g.simplify, g.chores FROM groups g";
 
-type GroupRow = Omit<Group, "simplify"> & { simplify: number };
-const toGroup = (r: GroupRow): Group => ({ ...r, simplify: r.simplify === 1 });
+type GroupRow = Omit<Group, "simplify" | "chores"> & {
+  simplify: number;
+  chores: number;
+};
+const toGroup = (r: GroupRow): Group => ({
+  ...r,
+  simplify: r.simplify === 1,
+  chores: r.chores === 1,
+});
 
 export function insertGroup(
   db: Db,
@@ -51,14 +60,15 @@ export function groupsForMember(db: Db, memberId: number): Group[] {
 export function updateGroup(
   db: Db,
   id: number,
-  g: { name: string; emoji: string; simplify: boolean },
+  g: { name: string; emoji: string; simplify: boolean; chores: boolean },
 ): void {
   run(
     db,
-    "UPDATE groups SET name = ?, emoji = ?, simplify = ? WHERE id = ?",
+    "UPDATE groups SET name = ?, emoji = ?, simplify = ?, chores = ? WHERE id = ?",
     g.name,
     g.emoji,
     g.simplify ? 1 : 0,
+    g.chores ? 1 : 0,
     id,
   );
 }

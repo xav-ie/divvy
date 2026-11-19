@@ -9,6 +9,9 @@ import VenmoPay from "../components/VenmoPay.tsx";
 import Layout from "../layouts/Layout.astro";
 import { getMembers } from "../db/members.ts";
 import { listActivity } from "../services/activity.ts";
+import { myTurns } from "../services/chores.ts";
+import { day } from "../client/format.ts";
+import { todayLocal } from "../domain/recurring.ts";
 import { homeSummary } from "../services/balances.ts";
 import { listGroups } from "../services/groups.ts";
 import { singleGroupPay, venmoPlan } from "../services/venmo.ts";
@@ -34,6 +37,8 @@ const plans = new Map(
     .filter((p) => p.cents < 0)
     .map((p) => [p.memberId, venmoPlan(ctx, p.memberId)]),
 );
+const today = todayLocal();
+const turns = myTurns(ctx, groups, today);
 const groupNames = new Map(
   groups.map((g) => [g.id, `${g.emoji} ${g.name}`.trim()]),
 );
@@ -104,6 +109,48 @@ const groupNames = new Map(
       </ul>
     </section>
   ) : null}
+
+  {turns.length > 0 && (
+    <section class="mt-6" aria-labelledby="chores-h">
+      <h2
+        id="chores-h"
+        class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted"
+      >
+        Your chores
+      </h2>
+      <ul class="card divide-y divide-line overflow-hidden">
+        {turns.map((t) => (
+          <li>
+            <a href={`/groups/${t.groupId}?tab=chores`} class="row-link">
+              <span class="min-w-0 flex-1">
+                <span
+                  class:list={[
+                    "block font-medium",
+                    t.turn.start <= today && "text-accent",
+                  ]}
+                >
+                  <RichText
+                    text={
+                      t.turn.start <= today
+                        ? `${t.chore}: you're up until ${day(t.turn.end)}`
+                        : `${t.chore}: your next turn starts ${day(t.turn.start)}`
+                    }
+                    viewer={{ id: me }}
+                  />
+                </span>
+                {groups.length > 1 && (
+                  <span class="block text-sm text-muted">
+                    {groupNames.get(t.groupId)}
+                  </span>
+                )}
+              </span>
+              <Chevron />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
 
   <section class="mt-8" aria-labelledby="activity-h">
     <h2
