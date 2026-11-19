@@ -1,5 +1,18 @@
 # divvy
 
+## 0.4.0
+
+### Minor Changes
+
+- 26dc83f: Chores: a group can turn on a Chores tab for jobs that rotate, like dishes
+  and trash. Each chore shows who's up and the schedule, turns can be swapped,
+  time away skips someone until they're back, and a push says when your turn
+  starts (Profile has a switch for it).
+- c971729: Every group's Expenses tab has an Export CSV link that downloads the group's
+  expenses, payments and balances — cents as dollars, dates as written, quotes
+  where commas need them — for taxes, rent ledgers or anything else that wants
+  a spreadsheet.
+
 ## 0.3.0
 
 ### Minor Changes
