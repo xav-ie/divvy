@@ -111,6 +111,11 @@ flake.nix        devShells.default
 - recurring: id, group_id, title, day_of_month (1..28), amount_cents
   (required, fixed), split JSON (member id -> weight), payer_member,
   last_month, created_by.
+- chores: id, group_id, name, instructions (one step per line), every_days
+  (1..28), starts, ends (nullable), rotation JSON (member ids in turn order),
+  created_by. chore_swaps: chore_id, turn_start, member_id. chore_away:
+  group_id, member_id, from_date, until_date (the day they're back).
+  groups.chores turns the feature on (off by default).
 - audit: who changed what, when (expense/payment create/update/delete), shown
   in a group activity feed.
 
@@ -165,10 +170,16 @@ e2e/store-screenshots.spec.ts`); long-press shortcuts Add expense and
   day (next date shown). Edit, pause, delete; a month whose bill was deleted
   can be added again by hand. Bills that change every month (electric, gas)
   are regular expenses, not recurring.
+- **Chores** (a group tab once any member turns Chores on in Members): each
+  chore says who's up now and until when, who's next, and your next turn;
+  its steps show open; the schedule lists turns a year ahead (Everyone or
+  Just my turns). Swap trades a turn with someone's next later turn. Time
+  away skips someone's turns until they're back. Home lists your turn under
+  way or next per chore.
 - **Profile**: name, sign out. App section: Install (when not installed),
   "Notifications on this device" (asks the browser's permission on tap;
   iPhone/iPad only once installed), and per-user switches for which pushes
-  to get, on every device: New expenses, Payments. The version (package.json,
+  to get, on every device: New expenses, Payments, Chores. The version (package.json,
   also in GET /api/config) with "Check for updates"; when the server runs a
   newer one, "Update to X" reloads the app.
 
@@ -185,6 +196,8 @@ a 404/410 from the push service deletes that subscription.
   from recurring templates stay quiet.
 - New payment: the payer and payee, except whoever recorded it ("Ben paid
   you $20.00").
+- Chores: whoever's turn starts that day, once per turn (daily cron), and
+  the people in a swap, except whoever made it ("Ana swapped Dishes").
 - Tapping one opens the expense (or the group for a payment) in an open
   divvy window when there is one.
 
@@ -224,6 +237,17 @@ template whose day has come this month and hasn't been billed. Idempotent per
 month. A month whose bill was deleted is not re-billed automatically; it can be
 added again by hand (UI or MCP bill_recurring), always for the template's
 amount.
+
+## Chores
+
+Turns repeat every `every_days` from `starts` and go round the rotation in
+order. Whoever is away when a turn starts is skipped and the order carries
+on from the next person. A swap only changes who does that turn. Moving the
+start or the turn length drops swaps. Two chores with the same order, the
+second starting on the first one's last day, pair up (dishes, then trash).
+Any member adds chores; the chore's or group's creator edits or deletes
+them; either person or the group's creator swaps; you mark yourself away,
+and the group's creator can mark anyone.
 
 ## Deploy
 

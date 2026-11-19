@@ -75,6 +75,7 @@ export const GroupPatch = z.object({
   name: name.optional(),
   emoji: text(16).optional(),
   simplify: z.boolean().optional(),
+  chores: z.boolean().optional(),
 });
 
 /** A placeholder by name, an invite by email, or both. */
@@ -141,8 +142,9 @@ export const NotifyInput = z
   .object({
     expenses: z.boolean().optional(),
     payments: z.boolean().optional(),
+    chores: z.boolean().optional(),
   })
-  .refine((p) => p.expenses !== undefined || p.payments !== undefined, {
+  .refine((p) => Object.values(p).some((v) => v !== undefined), {
     message: "Say which notifications to change",
   });
 

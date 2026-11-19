@@ -1,5 +1,7 @@
 ---
 import ActivityList from "../../../components/ActivityList.astro";
+import ChoresSwitch from "../../../components/ChoresSwitch.tsx";
+import ChoresTab from "../../../components/ChoresTab.tsx";
 import Avatar from "../../../components/Avatar.tsx";
 import Chevron from "../../../components/Chevron.astro";
 import RichText from "../../../components/RichText.astro";
@@ -12,6 +14,7 @@ import Layout from "../../../layouts/Layout.astro";
 import { formatDate } from "../../../client/format.ts";
 import { formatCents } from "../../../domain/money.ts";
 import { listActivity } from "../../../services/activity.ts";
+import { listChores } from "../../../services/chores.ts";
 import { groupBalances, type BalanceRow } from "../../../services/balances.ts";
 import { venmoPlan } from "../../../services/venmo.ts";
 import VenmoPay from "../../../components/VenmoPay.tsx";
@@ -38,6 +41,7 @@ if (Astro.url.searchParams.get("tab") === "recurring")
 const tabs = [
   { id: "expenses", label: "Expenses" },
   { id: "balances", label: "Balances" },
+  ...(group.chores ? [{ id: "chores", label: "Chores" } as const] : []),
   { id: "members", label: "Members" },
   { id: "activity", label: "Activity" },
 ] as const;
@@ -133,6 +137,7 @@ const faceOf = (d: BalanceRow) => {
   const id = d.involvesYou ? otherOf(d) : d.from;
   return { id, name: id === d.from ? d.fromName : d.toName };
 };
+const chores = tab === "chores" ? listChores(ctx, group.id) : null;
 const activity =
   tab === "activity" ? listActivity(ctx, { groupId: group.id }) : [];
 const title = `${group.emoji} ${group.name}`.trim();
@@ -371,7 +376,7 @@ const title = `${group.emoji} ${group.name}`.trim();
   )}
 
   {balances && tab === "members" && (
-    <section class="mt-4" aria-label="Members">
+    <section class="mt-4 space-y-4" aria-label="Members">
       <MembersPanel
         client:only="react"
         groupId={group.id}
@@ -389,6 +394,27 @@ const title = `${group.emoji} ${group.name}`.trim();
       >
         <Skeleton slot="fallback" rows={4} />
       </MembersPanel>
+      <ChoresSwitch client:load groupId={group.id} on={group.chores} />
+    </section>
+  )}
+
+  {chores && (
+    <section class="mt-4" aria-label="Chores">
+      <ChoresTab
+        client:only="react"
+        groupId={group.id}
+        me={me}
+        isCreator={group.isCreator}
+        initial={chores}
+        members={group.members.map((m) => ({
+          id: m.id,
+          name: m.name,
+          isYou: m.isYou,
+          placeholder: m.placeholder,
+        }))}
+      >
+        <Skeleton slot="fallback" rows={3} />
+      </ChoresTab>
     </section>
   )}
 

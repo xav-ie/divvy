@@ -15,6 +15,8 @@ export interface NotifyPrefs {
   expenses: boolean;
   /** Payments they made or received. */
   payments: boolean;
+  /** Their chore turn starting, and turns swapped with them. */
+  chores: boolean;
 }
 
 export type NotifyKind = keyof NotifyPrefs;
@@ -71,12 +73,16 @@ export function subscriptionsFor(
 }
 
 export function getPrefs(db: Db, userId: number): NotifyPrefs {
-  const r = one<{ expenses: number; payments: number }>(
+  const r = one<{ expenses: number; payments: number; chores: number }>(
     db,
-    "SELECT notify_expenses AS expenses, notify_payments AS payments FROM users WHERE id = ?",
+    "SELECT notify_expenses AS expenses, notify_payments AS payments, notify_chores AS chores FROM users WHERE id = ?",
     userId,
   )!;
-  return { expenses: r.expenses === 1, payments: r.payments === 1 };
+  return {
+    expenses: r.expenses === 1,
+    payments: r.payments === 1,
+    chores: r.chores === 1,
+  };
 }
 
 export function setPref(

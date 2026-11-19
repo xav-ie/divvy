@@ -27,3 +27,12 @@ export const formatTime = (iso: string): string =>
     hour: "numeric",
     minute: "2-digit",
   });
+
+/** "Mon Nov 16" (with the year when it isn't this year). */
+export const day = (date: string) => {
+  const [y, m, d] = date.split("-").map(Number) as [number, number, number];
+  const weekday = new Date(y, m - 1, d).toLocaleDateString("en-US", {
+    weekday: "short",
+  });
+  return `${weekday} ${formatDate(date)}`;
+};

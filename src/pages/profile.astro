@@ -14,7 +14,7 @@ import { listTokens } from "../services/tokens.ts";
 
 const { user } = Astro.locals.ctx;
 const picker = Astro.locals.auth.mode === "picker";
-const { expenses, payments } = await getPushSettings(Astro.locals.ctx);
+const { expenses, payments, chores } = await getPushSettings(Astro.locals.ctx);
 ---
 
 <Layout title="Profile">
@@ -38,7 +38,7 @@ const { expenses, payments } = await getPushSettings(Astro.locals.ctx);
   </SignInEmails>
   <AppSettings
     client:only="react"
-    initial={{ expenses, payments }}
+    initial={{ expenses, payments, chores }}
     version={VERSION}
   >
     <Skeleton slot="fallback" rows={3} />
